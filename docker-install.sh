@@ -43,11 +43,11 @@ then
     then
         echo
         echo -n "Adding user \"${USER}\" to the \'sudo\' group... "
-        sudo usermod -aG sudo ${USER}
+        sudo usermod -aG sudo "${USER}"
         echo "done!"
         echo -n "Ensuring that user \"${USER}\" can run \'sudo\' without entering a password... "
-        echo "${USER} ALL=(ALL) NOPASSWD:ALL" | sudo tee /etc/sudoers.d/90-${USER}-privileges >/dev/null
-        sudo chmod 0440 /etc/sudoers.d/90-${USER}-privileges
+        echo "${USER} ALL=(ALL) NOPASSWD:ALL" | sudo tee /etc/sudoers.d/90-"${USER}"-privileges >/dev/null
+        sudo chmod 0440 /etc/sudoers.d/90-"${USER}"-privileges
         echo "done!"
         echo
         echo "You should be ready to go now. If it continues to ask for a password below, do the following:"
@@ -60,7 +60,7 @@ then
 fi
 echo "Starting the installation of Docker."
 echo -n "Checking for an existing Docker installation... "
-if which docker >/dev/null 2>1
+if which docker >/dev/null 2>&1
 then
     echo "found! Skipping Docker installation"
 else
@@ -75,7 +75,7 @@ else
     echo "Installing Docker... "
     sudo sh get-docker.sh
     echo "Docker installed -- configuring docker..."
-    sudo usermod -aG docker $USER
+    sudo usermod -aG docker "${USER}"
     sudo mkdir -p /etc/docker
     sudo chmod a+rwx /etc/docker
     cat > /etc/docker/daemon.json <<EOF
@@ -105,7 +105,7 @@ EOF
 fi
 
 echo -n "Checking for Docker-compose installation... "
-if which docker-compose >/dev/null 2>1
+if which docker-compose >/dev/null 2>&1
 then
     echo "found! No need to install..."
 else
@@ -190,7 +190,7 @@ echo
 read -p "Press ENTER to continue, or CTRL-C to abort"
 echo
 tmpdir=$(mktemp -d)
-pushd $tmpdir >/dev/null
+pushd "$tmpdir" >/dev/null || exit
     echo -n "Getting the latest RTL-SDR packages... "
     sudo apt-get install -qq -y git rtl-sdr >/dev/null
     echo -n "Getting the latest UDEV rules... "
@@ -211,16 +211,16 @@ pushd $tmpdir >/dev/null
     # Unload any existing drivers, suppress any error messages that are displayed when the driver wasnt loaded:
     echo -n "Unloading any preloaded RTL-SDR drivers... ignore any error messages:"
     sudo -E $(which bash) -c "rmmod rtl2832_sdr 2>/dev/null"
-    sudo -E $(which bash) -c " rmmod dvb_usb_rtl28xxu 2>/dev/null"
-    sudo -E $(which bash) -c " rmmod rtl2832 2>/dev/null"
-    sudo -E $(which bash) -c " rmmod rtl8xxxu 2>/dev/null"
-    sudo -E $(which bash) -c " rmmod rtl2838 2>/dev/null"
+    sudo -E $(which bash) -c "rmmod dvb_usb_rtl28xxu 2>/dev/null"
+    sudo -E $(which bash) -c "rmmod rtl2832 2>/dev/null"
+    sudo -E $(which bash) -c "rmmod rtl8xxxu 2>/dev/null"
+    sudo -E $(which bash) -c "rmmod rtl2838 2>/dev/null"
 
 popd >/dev/null
-rm -rf $tmpdir
+rm -rf "$tmpdir"
 
 echo "Making sure commands will persist when the terminal closes..."
-sudo loginctl enable-linger $(whoami)
+sudo loginctl enable-linger "$(whoami)"
 if grep "denyinterfaces veth\*" /etc/dhcpcd.conf >/dev/null 2>&1
 then
   echo -n "Excluding veth interfaces from dhcp... "
