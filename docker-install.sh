@@ -195,11 +195,7 @@ pushd "$tmpdir" >/dev/null || exit
     sudo apt-get install -qq -y git rtl-sdr >/dev/null
     echo -n "Getting the latest UDEV rules... "
     # First install the UDEV rules for RTL-SDR dongles
-    git clone git://git.osmocom.org/rtl-sdr.git >/dev/null 2>&1
-    echo -n "Installing and updating UDEV rules... "
-    sudo cp rtl-sdr/rtl-sdr.rules /etc/udev/rules.d/
-    # Now make sure that the devices are R/W by all users, rather than only by root:
-    sudo -E $(which bash) -c "sed -i 's/MODE=\"0660/MODE=\"0666/g' /etc/udev/rules.d/rtl-sdr.rules >/dev/null 2>&1"
+    sudo -E $(which bash) -c "curl -sL -o /etc/udev/rules.d/rtl-sdr.rules https://raw.githubusercontent.com/wiedehopf/adsb-scripts/master/osmocom-rtl-sdr.rules"
     # Next, blacklist the drivers so the dongles stay accessible
     echo -n "Blacklisting any competing RTL-SDR drivers... "
     sudo -E $(which bash) -c "echo blacklist rtl2832 >/etc/modprobe.d/blacklist-rtl2832.conf"
