@@ -96,15 +96,26 @@ EOF
 
     sudo service docker restart
     echo "Now let's run a test container:"
-    sudo docker run --rm hello-world
-    echo
-    echo "Did you see the \"Hello from Docker! \" message above?"
-    echo "If yes, all is good! If not, press CTRL-C and trouble-shoot."
-    echo
-    echo "Note - in order to run your containers as user \"${USER}\" (and without \"sudo\"), you should"
-    echo "log out and log back into your Raspberry Pi once the installation is all done."
-    echo
-    read -p "Press ENTER to continue."
+    if sudo docker run --rm hello-world
+    then
+      echo ""
+      echo "Did you see the \"Hello from Docker! \" message above?"
+      echo "If yes, all is good! If not, press CTRL-C and trouble-shoot."
+      echo ""
+      echo "Note - in order to run your containers as user \"${USER}\" (and without \"sudo\"), you should"
+      echo "log out and log back into your Raspberry Pi once the installation is all done."
+      echo ""
+      read -p "Press ENTER to continue."
+    else
+      echo ""
+      echo "Something went wrong -- this will probably be fixed with a system reboot"
+      echo "You can continue to install all the other things using this script, and then reboot the system."
+      echo "After the reboot, give this command to check that everything works well:"
+      echo ""
+      echo "docker run --rm hello-world"
+      echo ""
+      read -p "Press ENTER to continue."
+    fi
 fi
 
 echo -n "Checking for Docker-compose installation... "
@@ -163,32 +174,29 @@ OS_VERSION=${OS_VERSION^^}
 LIBVERSION_MAJOR="$(apt-cache policy libseccomp2 | grep -e libseccomp2: -A1 | tail -n1 | sed -n 's/.*:\s*\([0-9]*\).\([0-9]*\).*/\1/p')"
 LIBVERSION_MINOR="$(apt-cache policy libseccomp2 | grep -e libseccomp2: -A1 | tail -n1 | sed -n 's/.*:\s*\([0-9]*\).\([0-9]*\).*/\2/p')"
 
-if (( LIBVERSION_MAJOR < 2 )) || (( LIBVERSION_MAJOR == 2 && LIBVERSION_MINOR < 5 )) && [[ "${OS_VERSION}" == "BUSTER" ]]
+if (( LIBVERSION_MAJOR < 2 )) || (( LIBVERSION_MAJOR == 2 && LIBVERSION_MINOR < 4 )) && [[ "${OS_VERSION}" == "BUSTER" ]]
 then
   echo "libseccomp2 needs updating. Please wait while we do this."
   sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 04EE7237B7D453EC 648ACFD622F3D138
   echo "deb http://deb.debian.org/debian buster-backports main" | sudo tee -a /etc/apt/sources.list.d/buster-backports.list
   sudo apt update
   sudo apt install -y -q -t buster-backports libseccomp2
-  # Now make sure all went well
-  LIBVERSION_MAJOR="$(apt-cache policy libseccomp2 | grep -e libseccomp2: -A1 | tail -n1 | sed -n 's/.*:\s*\([0-9]*\).\([0-9]*\).*/\1/p')"
-  LIBVERSION_MINOR="$(apt-cache policy libseccomp2 | grep -e libseccomp2: -A1 | tail -n1 | sed -n 's/.*:\s*\([0-9]*\).\([0-9]*\).*/\2/p')"
-  if (( LIBVERSION_MAJOR > 2 )) || (( LIBVERSION_MAJOR == 2 && LIBVERSION_MINOR >= 4 ))
-  then
-	   echo "Upgrade successful. Your system now uses libseccomp2 version $(apt-cache policy libseccomp2|sed -n 's/\s*Installed:\s*\(.*\)/\1/p')."
-  else
-	    echo "Something went wrong. Your system is using libseccomp2 v$(apt-cache policy libseccomp2|sed -n 's/\s*Installed:\s*\(.*\)/\1/p'), and it needs to be v2.4 or greater for the ADSB containers to work properly."
-      echo "Please follow these instructions to fix this after this install script finishes: https://github.com/fredclausen/Buster-Docker-Fixes"
-	    read -p "Press ENTER to continue."
-  fi
-elif (( LIBVERSION_MAJOR < 2 )) || (( LIBVERSION_MAJOR == 2 && LIBVERSION_MINOR < 5 )) && [[ "${OS_VERSION}" == "STRETCH" ]]
+elif (( LIBVERSION_MAJOR < 2 )) || (( LIBVERSION_MAJOR == 2 && LIBVERSION_MINOR < 4 )) && [[ "${OS_VERSION}" == "STRETCH" ]]
 then
   INSTALL_CANDIDATE=$(curl -qsL http://ftp.debian.org/debian/pool/main/libs/libseccomp/ |w3m -T text/html -dump | sed -n 's/^.*\(libseccomp2_2.5.*armhf.deb\).*/\1/p' | sort | tail -1)
   curl -qsL -o /tmp/"${INSTALL_CANDIDATE}" http://ftp.debian.org/debian/pool/main/libs/libseccomp/${INSTALL_CANDIDATE}
-  sudo sudo dpkg -i /tmp/"${INSTALL_CANDIDATE}"
+  sudo dpkg -i /tmp/"${INSTALL_CANDIDATE}" && rm -f /tmp/"${INSTALL_CANDIDATE}"
+fi
+# Now make sure all went well
+LIBVERSION_MAJOR="$(apt-cache policy libseccomp2 | grep -e libseccomp2: -A1 | tail -n1 | sed -n 's/.*:\s*\([0-9]*\).\([0-9]*\).*/\1/p')"
+LIBVERSION_MINOR="$(apt-cache policy libseccomp2 | grep -e libseccomp2: -A1 | tail -n1 | sed -n 's/.*:\s*\([0-9]*\).\([0-9]*\).*/\2/p')"
+if (( LIBVERSION_MAJOR > 2 )) || (( LIBVERSION_MAJOR == 2 && LIBVERSION_MINOR >= 4 ))
+then
+   echo "Your system now uses libseccomp2 version $(apt-cache policy libseccomp2|sed -n 's/\s*Installed:\s*\(.*\)/\1/p')."
 else
-  echo "Your system is based on Debian ${OS_VERSION} and has libseccomp2 v$(apt-cache policy libseccomp2|sed -n 's/\s*Installed:\s*\(.*\)/\1/p'),"
-  echo "No need to upgrade to a newer version!"
+    echo "Something went wrong. Your system is using libseccomp2 v$(apt-cache policy libseccomp2|sed -n 's/\s*Installed:\s*\(.*\)/\1/p'), and it needs to be v2.4 or greater for the ADSB containers to work properly."
+    echo "Please follow these instructions to fix this after this install script finishes: https://github.com/fredclausen/Buster-Docker-Fixes"
+    read -p "Press ENTER to continue."
 fi
 
 echo
