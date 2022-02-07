@@ -1,4 +1,7 @@
+<img align="right" src="https://raw.githubusercontent.com/sdr-enthusiasts/sdr-enthusiast-assets/main/SDR%20Enthusiasts.svg" height="300">
+
 # docker-install
+
 Script to help install Docker on Raspberry Pi and similar Debian-based OSes
 ## What is it?
 The [docker-install.sh](docker-install.sh) script helps users get ready to use the SDR-Enthusiasts' (@mikenye/@fredclausen/@k1xt) Docker containers.
