@@ -155,7 +155,7 @@ else
 fi
 
 # Now make sure that libseccomp2 >= version 2.4. This is necessary for Bullseye-based containers
-# This is often an issue on Buster-based host systems with 32-bits Rasp Pi OS installed pre-November 2021.
+# This is often an issue on Buster and Stretch-based host systems with 32-bits Rasp Pi OS installed pre-November 2021.
 # The following code checks and corrects this - see also https://github.com/fredclausen/Buster-Docker-Fixes
 OS_VERSION="$(sed -n 's/\(^\s*VERSION_CODENAME=\)\(.*\)/\2/p' /etc/os-release)"
 [[ "$OS_VERSION" == "" ]] && OS_VERSION="$(sed -n 's/^\s*VERSION=.*(\(.*\)).*/\1/p' /etc/os-release)"
