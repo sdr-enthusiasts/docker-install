@@ -27,9 +27,12 @@ echo "Note - this scripts makes use of \"sudo\" to install Docker."
 echo "If you haven't added your current login to the \"sudoer\" list,"
 echo "you may be asked for your password at various times during the installation."
 echo
-echo "This script assumes a \"standard\" OS setup of Debian Buster or later, including variations like"
+echo "This script strongly prefers a \"standard\" OS setup of Debian Buster or later, including variations like"
 echo "Raspberry Pi OS or Ubuntu. It uses \'apt-get\' and \'wget\' to get started, and assumes access to"
 echo "the standard package repositories".
+echo
+echo "If you have an old device usign Debian Stretch, we will try to install the software, but be WARNED that"
+echo "Docker for Stretch is deprecated and is no longer actively supported by the Docker community."
 echo
 read -p "Press ENTER to start, CTRL-C to abort, or \"?\" to get help on how to add your login to the \"sudoers\" list > " text
 if [[ "$text" == "?" ]]
@@ -69,7 +72,7 @@ else
     echo -n "Updating repositories... "
     sudo apt-get update -qq -y >/dev/null && sudo apt-get upgrade -q -y
     echo -n "Ensuring dependencies are installed... "
-    sudo apt-get install -qq -y curl uidmap slirp4netns >/dev/null
+    sudo apt-get install -qq -y curl uidmap slirp4netns apt-transport-https ca-certificates curl gnupg2 software-properties-common w3m >/dev/null
     echo -n "Getting docker..."
     curl -fsSL https://get.docker.com -o get-docker.sh
     echo "Installing Docker... "
@@ -155,9 +158,11 @@ fi
 # This is often an issue on Buster-based host systems with 32-bits Rasp Pi OS installed pre-November 2021.
 # The following code checks and corrects this - see also https://github.com/fredclausen/Buster-Docker-Fixes
 OS_VERSION="$(sed -n 's/\(^\s*VERSION_CODENAME=\)\(.*\)/\2/p' /etc/os-release)"
+[[ "$OS_VERSION" == "" ]] && OS_VERSION="$(sed -n 's/^\s*VERSION=.*(\(.*\)).*/\1/p' /etc/os-release)"
 OS_VERSION=${OS_VERSION^^}
 LIBVERSION_MAJOR="$(apt-cache policy libseccomp2 | grep -e libseccomp2: -A1 | tail -n1 | sed -n 's/.*:\s*\([0-9]*\).\([0-9]*\).*/\1/p')"
 LIBVERSION_MINOR="$(apt-cache policy libseccomp2 | grep -e libseccomp2: -A1 | tail -n1 | sed -n 's/.*:\s*\([0-9]*\).\([0-9]*\).*/\2/p')"
+
 if (( LIBVERSION_MAJOR < 2 )) || (( LIBVERSION_MAJOR == 2 && LIBVERSION_MINOR < 5 )) && [[ "${OS_VERSION}" == "BUSTER" ]]
 then
   echo "libseccomp2 needs updating. Please wait while we do this."
@@ -176,6 +181,11 @@ then
       echo "Please follow these instructions to fix this after this install script finishes: https://github.com/fredclausen/Buster-Docker-Fixes"
 	    read -p "Press ENTER to continue."
   fi
+elif (( LIBVERSION_MAJOR < 2 )) || (( LIBVERSION_MAJOR == 2 && LIBVERSION_MINOR < 5 )) && [[ "${OS_VERSION}" == "STRETCH" ]]
+then
+  INSTALL_CANDIDATE=$(curl -qsL http://ftp.debian.org/debian/pool/main/libs/libseccomp/ |w3m -T text/html -dump | sed -n 's/^.*\(libseccomp2_2.5.*armhf.deb\).*/\1/p' | sort | tail -1)
+  curl -qsL -o /tmp/"${INSTALL_CANDIDATE}" http://ftp.debian.org/debian/pool/main/libs/libseccomp/${INSTALL_CANDIDATE}
+  sudo sudo dpkg -i /tmp/"${INSTALL_CANDIDATE}"
 else
   echo "Your system is based on Debian ${OS_VERSION} and has libseccomp2 v$(apt-cache policy libseccomp2|sed -n 's/\s*Installed:\s*\(.*\)/\1/p'),"
   echo "No need to upgrade to a newer version!"
