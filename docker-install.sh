@@ -224,7 +224,14 @@ then
   echo "done!"
 fi
 
-echo
+# Add some aliases to localhost in `/etc/hosts`. This will speed up recreation of images with docker-compose
+if ! grep localunixsocket /etc/hosts >/dev/null 2>&1
+then
+  echo "Speeding up the recreation of containers when using docker-compose..."
+  sudo sed -i 's/^\(127.0.0.1\s*localhost\)\(.*\)/\1\2 localunixsocket localunixsocket.local localunixsocket.home/g' /etc/hosts
+fi
+
+echo ""
 echo "We\'ve installed these packages, and we think they may be useful for you in the future. So we will leave them installed:"
 echo "git, rtl-sdr"
 echo "If you don\'t want them, feel free to uninstall them using this command:"
