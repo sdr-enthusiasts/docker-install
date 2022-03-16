@@ -149,7 +149,7 @@ else
       echo "Cannot install Docker-Compose for your system \"${OS_NAME}-${ARCH_NAME}\" because there is no suitable install candidate."
       echo "You may be able to install it manually or compile from source; see https://github.com/docker/compose/releases"
     else
-      sudo curl -L "https://github.com/docker/compose/releases/download/v2.2.3/docker-compose-${OS_NAME}-${ARCH_NAME}" -o /usr/local/bin/docker-compose
+      sudo curl -L "https://github.com/docker/compose/releases/download/v2.3.3/docker-compose-${OS_NAME}-${ARCH_NAME}" -o /usr/local/bin/docker-compose
       sudo chmod +x /usr/local/bin/docker-compose
       sudo ln -sf /usr/local/bin/docker-compose /usr/bin/docker-compose
       [[ -d "/usr/local/lib/docker/cli-plugins" ]] && sudo ln -s /usr/local/bin/docker-compose /usr/local/lib/docker/cli-plugins
