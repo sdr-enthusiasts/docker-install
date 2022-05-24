@@ -1,0 +1,34 @@
+# Config parameters for ASDB Docker Containers:
+# Station characteristics:
+FEEDER_ALT_FT=xx
+FEEDER_ALT_M=xx
+FEEDER_LAT=xx.xxxxx
+FEEDER_LONG=xx.xxxxx
+FEEDER_TZ=America/New_York
+HEYWHATSTHAT=XXXXXXX
+#
+# Feeder parameters:
+ADSBX_UUID=exxxxxx-xxxa-xxxx-xxxx-xxxxxxxxxxxx2
+ADSBX_SITENAME=xxxx-0
+PIAWARE_FEEDER_ID=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+FR24_SHARING_KEY=xxxxxxxxxxxxxxx
+FR24_RADAR_ID=T-xxxxxx
+RADARBOX_SHARING_KEY=xxxxxxxxxxxxxxxxxxxxxxxxxxx
+ADSBHUB_STATION_KEY='xxxxxxxxxxxxxxxxxx'
+PLANEFINDER_SHARECODE=xxxxxxxxxxxxx
+PLANEWATCH_KEY=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+RV_KEY="xxxx:xxxxxxxxxxxxxxxxxxxxx"
+#
+# ACARS/VDML related parameters:
+ADSB_DONGLE_SERIAL="dongle-serial-number"
+ADSB_DONGLE_GAIN=autogain
+ADSB_DONGLE_PPM="dongle-ppm"
+ACARS_FREQUENCIES='130.450;130.825;130.850;131.525;131.550;131.725;131.825;131.850'
+ACARS_FEEDER_ID=XX-XXXX-ACARS
+VDLM_DONGLE_SERIAL="dongle-serial-number"
+VDLM_DONGLE_GAIN="dongle-gain"
+VDLM_FREQUENCIES='136.650;136.675;136.725;136.775;136.825;136.875;136.975'
+VDLM_FEEDER_ID=XX-XXXX-VDL
+#
+# Other parameters:
+MY_HOST=192.168.1.184
