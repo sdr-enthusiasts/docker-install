@@ -199,6 +199,7 @@ services:
   fr24:
 # fr24 feeds ADS-B and UAT data (from readsb) to FlightRadar24. It also includes a status website. Please be careful
 # not to expose the status website to the internet as users may be able to start/stop/change the service from there.
+# Also note that FR24 has requested NOT to enable MLAT for those station that feed to multiple services; as such, it's commented out.
     image: ghcr.io/sdr-enthusiasts/docker-flightradar24
 #    profiles:
 #      - donotstart
@@ -216,7 +217,7 @@ services:
       - BEASTHOST=readsb
       - TZ=${FEEDER_TZ}
       - FR24KEY=${FR24_SHARING_KEY}
-      - MLAT=yes
+#      - MLAT=yes
     tmpfs:
       - /var/log
 
@@ -339,6 +340,8 @@ services:
  
   tar1090:
     image: ghcr.io/sdr-enthusiasts/docker-tar1090
+#    profiles:
+#      - donotstart
     tty: true
     container_name: tar1090
     hostname: tar1090
@@ -373,6 +376,8 @@ services:
   planefence:
 # Note - after initial startup, please edit /opt/adsb/planefence/config/planefence.config. Then restart this container.
     image: kx1t/planefence:dev
+#    profiles:
+#      - donotstart
     tty: true
     container_name: planefence
     hostname: planefence
@@ -395,6 +400,8 @@ services:
 
   screenshot:
     image: tedder42/browser-screenshot-service
+#    profiles:
+#      - donotstart
     tty: true
     container_name: screenshot
     hostname: screenshot
@@ -419,8 +426,8 @@ services:
 
   airband:
     image: fredclausen/rtlsdrairband
-    profiles:
-      - donotstart
+#    profiles:
+#      - donotstart
     tty: true
     container_name: airband
     restart: always
@@ -544,6 +551,8 @@ services:
 
   webproxy:
     image: kx1t/webproxy:dev
+#    profiles:
+#      - donotstart
     tty: true
     container_name: webproxy
     hostname: webproxy
