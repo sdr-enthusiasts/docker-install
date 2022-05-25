@@ -384,8 +384,6 @@ services:
     restart: always
     depends_on:
       - tar1090
-    cap_add:
-      - SYS_PTRACE
     ports:
       - 8083:80
     environment:
