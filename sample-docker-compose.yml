@@ -578,7 +578,6 @@ services:
             /planefinder/logs.html|http://$$host:8084/logs.html,
             /airband|http://$$host:8000
        - SSL=DISABLED
-       - VERBOSELOG=on
        - BLOCKBOT=
             bot,LieBaoFast,UCBrowser,MQQBrowser,Mb2345Browser,
             google,bing,yandex,msnbot,
