@@ -61,7 +61,6 @@ services:
       - READSB_GRAPH_MAX_MESSAGES_LINE=1
       - READSB_GRAPH_ALL_LARGE=yes
       - READSB_EXTRA_ARGS=api-port,8080
-      - READSB_RX_LOCATION_ACCURACY=1
     volumes:
       - readsbpb_rrd:/run/collectd
       - readsbpb_autogain:/run/autogain
