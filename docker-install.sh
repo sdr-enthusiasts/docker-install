@@ -122,6 +122,11 @@ echo -n "Checking for Docker-compose installation... "
 if which docker-compose >/dev/null 2>&1
 then
     echo "found! No need to install..."
+elif docker compose version >/dev/null 2>&1
+then
+    echo "Docker Compose plugin found. Creating an alias to it for \"docker-compose \"..."
+    echo "alias docker-compose=\'docker compose\'" >> ~/.bash_aliases
+    source ~/.bash_aliases
 else
     echo "not found!"
     echo "Installing Docker-compose... "
