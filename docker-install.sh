@@ -125,7 +125,7 @@ then
 elif docker compose version >/dev/null 2>&1
 then
     echo "Docker Compose plugin found. Creating an alias to it for \"docker-compose \"..."
-    echo "alias docker-compose=\'docker compose\'" >> ~/.bash_aliases
+    echo "alias docker-compose=\"docker compose\"" >> ~/.bash_aliases
     source ~/.bash_aliases
 else
     echo "not found!"
