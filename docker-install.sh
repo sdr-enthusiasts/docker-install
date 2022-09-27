@@ -1,4 +1,5 @@
 #!/bin/bash
+#shellcheck shell=bash external-sources=false disable=SC1090,SC2164
 # DOCKER-INSTALL.SH -- Installation script for the Docker infrastructure on a Raspbian or Ubuntu system
 # Usage: source <(curl -s https://raw.githubusercontent.com/sdr-enthusiasts/docker-install/main/docker-install.sh)
 #
@@ -34,34 +35,40 @@ echo
 echo "If you have an old device usign Debian Stretch, we will try to install the software, but be WARNED that"
 echo "Docker for Stretch is deprecated and is no longer actively supported by the Docker community."
 echo
-read -p "Press ENTER to start, CTRL-C to abort, or \"?\" to get help on how to add your login to the \"sudoers\" list > " text
-if [[ "$text" == "?" ]]
+
+if [[ "$(whoami)" == "root" ]]
+then
+    echo "STOP -- you are logged in as user \"root\". Don't install your Docker things as \"root\". Not good. Really!"
+    echo "Please log out from this account, log in as some other user, and run this script again."
+    echo "If you don't know how to create a new user, you can read up on it here: https://linuxize.com/post/how-to-create-a-sudo-user-on-debian/"
+    echo ""
+    exit 1
+fi
+
+echo "We'll start by adding your login name, \"${USER}\", to \"sudoers\". This will enable you to use \"sudo\" without having to type your password every time."
+echo "You may be asked to enter your password a few times below. We promise, this is the last time."
+echo
+read -p "Should we do this now? If you choose \"no\", you can always to it later by yourself [Y/n] > " -n 1 text
+if [[ "${text,,}" != "n" ]]
 then
     echo
-    echo "Adding your login name, \"${USER}\", to \"sudoers\" will enable you to use \"sudo\" without having to type your password every time."
-    echo "You may be asked to enter your password a few times below. We promise, this is the last time."
+    echo -n "Adding user \"${USER}\" to the \'sudo\' group... "
+    sudo usermod -aG sudo "${USER}"
+    echo "done!"
+    echo -n "Ensuring that user \"${USER}\" can run \'sudo\' without entering a password... "
+    echo "${USER} ALL=(ALL) NOPASSWD:ALL" | sudo tee /etc/sudoers.d/90-"${USER}"-privileges >/dev/null
+    sudo chmod 0440 /etc/sudoers.d/90-"${USER}"-privileges
+    echo "done!"
     echo
-    read -p "Should we do this now? If you choose \"no\", you can always to it later by yourself [Y/n] > " -n 1 text
-    if [[ "${text,,}" != "n" ]]
-    then
-        echo
-        echo -n "Adding user \"${USER}\" to the \'sudo\' group... "
-        sudo usermod -aG sudo "${USER}"
-        echo "done!"
-        echo -n "Ensuring that user \"${USER}\" can run \'sudo\' without entering a password... "
-        echo "${USER} ALL=(ALL) NOPASSWD:ALL" | sudo tee /etc/sudoers.d/90-"${USER}"-privileges >/dev/null
-        sudo chmod 0440 /etc/sudoers.d/90-"${USER}"-privileges
-        echo "done!"
-        echo
-        echo "You should be ready to go now. If it continues to ask for a password below, do the following:"
-        echo "- press CTRL-c to stop the execution of this install script"
-        echo "- type \"exit\" to log out from your machine"
-        echo "- log in again"
-        echo "- re-run this script using the same command as you did before"
-        echo
-    fi
+    echo "You should be ready to go now. If it continues to ask for a password below, do the following:"
+    echo "- press CTRL-c to stop the execution of this install script"
+    echo "- type \"exit\" to log out from your machine"
+    echo "- log in again"
+    echo "- re-run this script using the same command as you did before"
+    echo
 fi
-echo "Starting the installation of Docker."
+
+echo "We will now continue and install Docker."
 echo -n "Checking for an existing Docker installation... "
 if which docker >/dev/null 2>&1
 then
@@ -131,44 +138,53 @@ else
     echo "not found!"
     echo "Installing Docker-compose... "
 
-    # Do a bunch of prep work
-    DC_ARCHS=("darwin-aarch64")
-    DC_ARCHS+=("darwin-x86_64")
-    DC_ARCHS+=("linux-aarch64")
-    DC_ARCHS+=("linux-armv6")
-    DC_ARCHS+=("linux-armv7")
-    DC_ARCHS+=("linux-s390x")
-    DC_ARCHS+=("linux-x86_64")
+    # new method --get the plugin through apt. This means that it will be maintained through package upgrades in the future
+    sudo apt install -y docker-compose-plugin
+    echo "alias docker-compose=\"docker compose\"" >> ~/.bash_aliases
+    source ~/.bash_aliases
 
-    OS_NAME="$(uname -s)"
-    OS_NAME="${OS_NAME,,}"
-    ARCH_NAME="$(uname -m)"
-    ARCH_NAME="${ARCH_NAME,,}"
-    [[ "${ARCH_NAME:0:5}" == "armv6" ]] && ARCH_NAME="armv6"
-    [[ "${ARCH_NAME:0:5}" == "armv7" ]] && ARCH_NAME="armv7"
-    [[ "${ARCH_NAME:0:5}" == "armhf" ]] && ARCH_NAME="armv7"
-    [[ "${ARCH_NAME:0:5}" == "armel" ]] && ARCH_NAME="armv6"
-
-    if [[ ! "${DC_ARCHS[*]}" =~ "${OS_NAME}-${ARCH_NAME}" ]]
-    then
-      echo "Cannot install Docker-Compose for your system \"${OS_NAME}-${ARCH_NAME}\" because there is no suitable install candidate."
-      echo "You may be able to install it manually or compile from source; see https://github.com/docker/compose/releases"
-    else
-      sudo curl -L "https://github.com/docker/compose/releases/download/v2.9.0/docker-compose-${OS_NAME}-${ARCH_NAME}" -o /usr/local/bin/docker-compose
-      # sudo curl -L "https://github.com/docker/compose/releases/download/latest/docker-compose-${OS_NAME}-${ARCH_NAME}" -o /usr/local/bin/docker-compose
-      sudo chmod +x /usr/local/bin/docker-compose
-      sudo ln -sf /usr/local/bin/docker-compose /usr/bin/docker-compose
-      [[ -d "/usr/local/lib/docker/cli-plugins" ]] && sudo ln -s /usr/local/bin/docker-compose /usr/local/lib/docker/cli-plugins
-      [[ -d "/usr/lib/docker/cli-plugins" ]] && sudo ln -s /usr/local/bin/docker-compose /usr/lib/docker/cli-plugins
-      [[ -d "/usr/local/libexec/docker/cli-plugins" ]] && sudo ln -s /usr/local/bin/docker-compose /usr/local/libexec/docker/cli-plugins
-      [[ -d "/usr/libexec/docker/cli-plugins" ]] && sudo ln -s /usr/local/bin/docker-compose /usr/libexec/docker/cli-plugins
+    # old way -- install it manually from the repo. No longer recommended (but it should still work)
+    #            also - this was hard-pegged against a specific docker-compose version and needed manual changes to the script
+    #            to configure newer releases.
+    #
+    # # Do a bunch of prep work
+    # DC_ARCHS=("darwin-aarch64")
+    # DC_ARCHS+=("darwin-x86_64")
+    # DC_ARCHS+=("linux-aarch64")
+    # DC_ARCHS+=("linux-armv6")
+    # DC_ARCHS+=("linux-armv7")
+    # DC_ARCHS+=("linux-s390x")
+    # DC_ARCHS+=("linux-x86_64")
+    #
+    # OS_NAME="$(uname -s)"
+    # OS_NAME="${OS_NAME,,}"
+    # ARCH_NAME="$(uname -m)"
+    # ARCH_NAME="${ARCH_NAME,,}"
+    # [[ "${ARCH_NAME:0:5}" == "armv6" ]] && ARCH_NAME="armv6"
+    # [[ "${ARCH_NAME:0:5}" == "armv7" ]] && ARCH_NAME="armv7"
+    # [[ "${ARCH_NAME:0:5}" == "armhf" ]] && ARCH_NAME="armv7"
+    # [[ "${ARCH_NAME:0:5}" == "armel" ]] && ARCH_NAME="armv6"
+    #
+    # if [[ ! "${DC_ARCHS[*]}" =~ "${OS_NAME}-${ARCH_NAME}" ]]
+    # then
+    #   echo "Cannot install Docker-Compose for your system \"${OS_NAME}-${ARCH_NAME}\" because there is no suitable install candidate."
+    #   echo "You may be able to install it manually or compile from source; see https://github.com/docker/compose/releases"
+    # else
+    #   sudo curl -L "https://github.com/docker/compose/releases/download/v2.9.0/docker-compose-${OS_NAME}-${ARCH_NAME}" -o /usr/local/bin/docker-compose
+    #   # sudo curl -L "https://github.com/docker/compose/releases/download/latest/docker-compose-${OS_NAME}-${ARCH_NAME}" -o /usr/local/bin/docker-compose
+    #   sudo chmod +x /usr/local/bin/docker-compose
+    #   sudo ln -sf /usr/local/bin/docker-compose /usr/bin/docker-compose
+    #   [[ -d "/usr/local/lib/docker/cli-plugins" ]] && sudo ln -s /usr/local/bin/docker-compose /usr/local/lib/docker/cli-plugins
+    #   [[ -d "/usr/lib/docker/cli-plugins" ]] && sudo ln -s /usr/local/bin/docker-compose /usr/lib/docker/cli-plugins
+    #   [[ -d "/usr/local/libexec/docker/cli-plugins" ]] && sudo ln -s /usr/local/bin/docker-compose /usr/local/libexec/docker/cli-plugins
+    #   [[ -d "/usr/libexec/docker/cli-plugins" ]] && sudo ln -s /usr/local/bin/docker-compose /usr/libexec/docker/cli-plugins
       if docker-compose version
       then
         echo "Docker-compose was installed successfully."
       else
         echo "Docker-compose was not installed correctly - you may need to do this manually."
       fi
-    fi
+    # fi
 fi
 
 # Now make sure that libseccomp2 >= version 2.4. This is necessary for Bullseye-based containers
@@ -211,39 +227,40 @@ echo "Examples of these include the collection of containers maintained by @Mike
 echo "Tar1090, Readsb-ProtoBuf, Acarshub, PlaneFence, PiAware, RadarVirtuel, FR24, other feeders, etc."
 echo "It\'s safe to say YES to this question and continue, unless you are using a DVB-T stick to watch digital television."
 echo
-read -p "Press ENTER to continue, or CTRL-C to abort"
-echo
-tmpdir=$(mktemp -d)
-pushd "$tmpdir" >/dev/null || exit
-    echo -n "Getting the latest RTL-SDR packages... "
-    sudo apt-get install -qq -y git rtl-sdr >/dev/null
-    echo -n "Getting the latest UDEV rules... "
-    # First install the UDEV rules for RTL-SDR dongles
-    sudo -E $(which bash) -c "curl -sL -o /etc/udev/rules.d/rtl-sdr.rules https://raw.githubusercontent.com/wiedehopf/adsb-scripts/master/osmocom-rtl-sdr.rules"
-    # Next, blacklist the drivers so the dongles stay accessible
-    echo -n "Blacklisting any competing RTL-SDR drivers... "
-    sudo -E $(which bash) -c "echo blacklist rtl2832 >/etc/modprobe.d/blacklist-rtl2832.conf"
-    sudo -E $(which bash) -c "echo blacklist dvb_usb_rtl28xxu >>/etc/modprobe.d/blacklist-rtl2832.conf"
-    sudo -E $(which bash) -c "echo blacklist rtl2832_sdr >>/etc/modprobe.d/blacklist-rtl2832.conf"
-    sudo -E $(which bash) -c "echo blacklist rtl8xxxu >>/etc/modprobe.d/blacklist-rtl2832.conf"
-    sudo -E $(which bash) -c "echo blacklist rtl2838 >>/etc/modprobe.d/blacklist-rtl2832.conf"
+ead -p "Please choose yes or no [Y/n] > " -n 1 text
+if [[ "${text,,}" != "n" ]]
+then
+    echo
+    tmpdir=$(mktemp -d)
+    pushd "$tmpdir" >/dev/null || exit
+        echo -n "Getting the latest RTL-SDR packages... "
+        sudo apt-get install -qq -y git rtl-sdr >/dev/null
+        echo -n "Getting the latest UDEV rules... "
+        # First install the UDEV rules for RTL-SDR dongles
+        sudo -E "$(which bash)" -c "curl -sL -o /etc/udev/rules.d/rtl-sdr.rules https://raw.githubusercontent.com/wiedehopf/adsb-scripts/master/osmocom-rtl-sdr.rules"
+        # Next, blacklist the drivers so the dongles stay accessible
+        echo -n "Blacklisting any competing RTL-SDR drivers... "
+        sudo -E "$(which bash)" -c "echo blacklist rtl2832 >/etc/modprobe.d/blacklist-rtl2832.conf"
+        sudo -E "$(which bash)" -c "echo blacklist dvb_usb_rtl28xxu >>/etc/modprobe.d/blacklist-rtl2832.conf"
+        sudo -E "$(which bash)" -c "echo blacklist rtl2832_sdr >>/etc/modprobe.d/blacklist-rtl2832.conf"
+        sudo -E "$(which bash)" -c "echo blacklist rtl8xxxu >>/etc/modprobe.d/blacklist-rtl2832.conf"
+        sudo -E "$(which bash)" -c "echo blacklist rtl2838 >>/etc/modprobe.d/blacklist-rtl2832.conf"
 
-    # Unload any existing drivers, suppress any error messages that are displayed when the driver wasnt loaded:
-    echo -n "Unloading any preloaded RTL-SDR drivers... ignore any error messages:"
-    sudo -E $(which bash) -c "rmmod rtl2832_sdr 2>/dev/null"
-    sudo -E $(which bash) -c "rmmod dvb_usb_rtl28xxu 2>/dev/null"
-    sudo -E $(which bash) -c "rmmod rtl2832 2>/dev/null"
-    sudo -E $(which bash) -c "rmmod rtl8xxxu 2>/dev/null"
-    sudo -E $(which bash) -c "rmmod rtl2838 2>/dev/null"
-
-popd >/dev/null
-rm -rf "$tmpdir"
-
+        # Unload any existing drivers, suppress any error messages that are displayed when the driver wasnt loaded:
+        echo -n "Unloading any preloaded RTL-SDR drivers... ignore any error messages:"
+        sudo -E "$(which bash)" -c "rmmod rtl2832_sdr 2>/dev/null"
+        sudo -E "$(which bash)" -c "rmmod dvb_usb_rtl28xxu 2>/dev/null"
+        sudo -E "$(which bash)" -c "rmmod rtl2832 2>/dev/null"
+        sudo -E "$(which bash)" -c "rmmod rtl8xxxu 2>/dev/null"
+        sudo -E "$(which bash)" -c "rmmod rtl2838 2>/dev/null"
+    popd >/dev/null
+    rm -rf "$tmpdir"
+fi
 echo "Making sure commands will persist when the terminal closes..."
 sudo loginctl enable-linger "$(whoami)"
 if grep "denyinterfaces veth\*" /etc/dhcpcd.conf >/dev/null 2>&1
 then
-  echo -n "Excluding veth interfaces from dhcp... "
+  echo -n "Excluding veth interfaces from dhcp. This will prevent problems if you are connected to the internet via Wifi when running many Docker containers... "
   sudo sh -c 'echo "denyinterfaces veth*" >> /etc/dhcpcd.conf'
   echo "done!"
 fi
@@ -267,6 +284,8 @@ echo "WARNING - if you are connected remotely to a Raspberry Pi (via SSH or VNC)
 echo "make sure you unplug any externally powered USB devices or hubs before rebooting"
 echo "because these may cause your Raspberry Pi to get stuck in the \"off\" state!"
 echo ""
-echo "Once rebooted, you are ready to go!"
-read -p "Press ENTER to reboot, or CTRL-C to abort"
-sudo reboot
+echo "Once rebooted, you are ready to go! For safety reasons we won't do the reboot for you, but you can do it manually by typing:"
+echo ""
+echo "sudo reboot"
+echo ""
+echo "That's all -- thanks for using our docker-install script. You are now ready to create docker-compose.yml files and start running containers!"
