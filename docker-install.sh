@@ -227,7 +227,7 @@ echo "Examples of these include the collection of containers maintained by @Mike
 echo "Tar1090, Readsb-ProtoBuf, Acarshub, PlaneFence, PiAware, RadarVirtuel, FR24, other feeders, etc."
 echo "It\'s safe to say YES to this question and continue, unless you are using a DVB-T stick to watch digital television."
 echo
-ead -p "Please choose yes or no [Y/n] > " -n 1 text
+read -p "Please choose yes or no [Y/n] > " -n 1 text
 if [[ "${text,,}" != "n" ]]
 then
     echo
