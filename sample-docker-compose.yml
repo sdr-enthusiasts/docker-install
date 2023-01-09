@@ -1,16 +1,5 @@
 version: '3.8'
 
-volumes:
-  readsbpb_rrd:
-  readsbpb_autogain:
-  dump978_autogain:
-  tar1090_heatmap:
-  tar1090_timelapse:
-  acars_data:
-  acarshub_run:
-  vnstatdb:
-
-
 services:
 ######################################################################################################################################
 # ADS-B/UAT Data Processing Services. These containers read data from dongles and/or other containers and decode or process this data.
@@ -62,8 +51,8 @@ services:
       - READSB_GRAPH_ALL_LARGE=yes
       - READSB_EXTRA_ARGS=api-port,8080
     volumes:
-      - readsbpb_rrd:/run/collectd
-      - readsbpb_autogain:/run/autogain
+      - /opt/adsb/readsb/collectd:/run/collectd
+      - /opt/adsb/readsb/autogain:/run/autogain
     tmpfs:
       - /run/readsb
       - /var/log
@@ -92,7 +81,7 @@ services:
       - DUMP978_SDR_PPM=${ADSB_DONGLE_PPM}
       - AUTOGAIN_INITIAL_PERIOD=7200
     volumes:
-      - dump978_autogain:/run/autogain
+      - /opt/adsb/dump978/autogain:/run/autogain
     tmpfs:
       - /run/readsb
 
@@ -367,8 +356,8 @@ services:
     ports:
       - 8082:80
     volumes:
-      - "tar1090_heatmap:/var/globe_history"
-      - "tar1090_timelapse:/var/timelapse1090"
+      - "/opt/adsb/tar1090/heatmap:/var/globe_history"
+      - "/opt/adsb/tar1090/timelapse:/var/timelapse1090"
     tmpfs:
       - /run:exec,size=64M
       - /var/log
@@ -619,7 +608,7 @@ services:
     volumes:
        - /etc/localtime:/etc/localtime:ro
        - /etc/timezone:/etc/timezone:ro
-       - vnstatdb:/var/lib/vnstat
+       - /opt/adsb/vnstat:/var/lib/vnstat
     environment:
        - HTTP_PORT=8685
        - HTTP_BIND=*
