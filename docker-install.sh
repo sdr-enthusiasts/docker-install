@@ -1,7 +1,7 @@
 #!/bin/bash
 #shellcheck shell=bash external-sources=false disable=SC1090,SC2164
 # DOCKER-INSTALL.SH -- Installation script for the Docker infrastructure on a Raspbian or Ubuntu system
-# Usage: source <(curl -s https://raw.githubusercontent.com/sdr-enthusiasts/docker-install/main/docker-install.sh)
+# Usage: source <(curl -s https://raw.githubusercontent.com/wandering-andy/docker-install/v1/docker-install.sh)
 #
 # Copyright 2021, 2022, Ramon F. Kolb (kx1t)- licensed under the terms and conditions
 # of the MIT license. The terms and conditions of this license are included with the Github
