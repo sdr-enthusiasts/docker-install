@@ -74,9 +74,9 @@ services:
     depends_on:
       - readsb
       - piaware
-      - adsbx
-      - rbfeeder
-      - radarvirtuel
+    #  - adsbx
+    #  - rbfeeder
+    #  - radarvirtuel
     ports:
       - 30105:30105
     environment:
