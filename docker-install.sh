@@ -67,6 +67,7 @@ then
     echo
 fi
 
+# I wonder if this can tell whether or not Docker has been installed via snap
 echo "We will now continue and install Docker."
 echo -n "Checking for an existing Docker installation... "
 if which docker >/dev/null 2>&1
