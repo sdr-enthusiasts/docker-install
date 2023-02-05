@@ -238,7 +238,7 @@ services:
     environment:
       - TZ=${FEEDER_TZ}
       - SBSHOST=readsb
-      - CLIENTKEY=${ADSBHUB_STATION_KEY}  
+      #- CLIENTKEY=${ADSBHUB_STATION_KEY}  
 
 
 ######################################################################################################################################
@@ -271,9 +271,9 @@ services:
       - TAR1090_SITESHOW=true
       #- HEYWHATSTHAT_PANORAMA_ID=${HEYWHATSTHAT}
       - ENABLE_TIMELAPSE1090=true
-      #- MLATHOST=mlathub
+      - MLATHOST=mlathub
       - TAR1090_ENABLE_AC_DB=true
-      #- TAR1090_FLIGHTAWARELINKS=true
+      - TAR1090_FLIGHTAWARELINKS=true
     ports:
       - 8082:80
     volumes:
