@@ -335,3 +335,45 @@ services:
       - WATCHTOWER_ROLLING_RESTART=true
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
+######################################################################################################################################
+# InfluxDB & Grafana
+
+  influxdb:
+    image: influxdb
+    container_name: influxdb
+    restart: unless-stopped
+    network_mode: "host"
+    ports:
+       - 8685:8685
+    volumes:
+       - /etc/localtime:/etc/localtime:ro
+       - /etc/timezone:/etc/timezone:ro
+       - /opt/adsb/influxdb:/var/var/lib/influxdb2
+    environment:
+       - HTTP_PORT=8685
+       - HTTP_BIND=*
+       - HTTP_LOG=/dev/stdout
+       - LARGE_FONTS=1
+       - CACHE_TIME=1
+       - RATE_UNIT=0
+       - PAGE_REFRESH=0
+
+grafana:
+    image: grafana/grafana-oss
+    container_name: grafana
+    restart: unless-stopped
+    network_mode: "host"
+    ports:
+       - 3000:3000
+    volumes:
+       - /etc/localtime:/etc/localtime:ro
+       - /etc/timezone:/etc/timezone:ro
+       - /opt/adsb/granfana:/var/lib/grafana
+    environment:
+       - HTTP_PORT=3000
+       - HTTP_BIND=*
+       - HTTP_LOG=/dev/stdout
+       - LARGE_FONTS=1
+       - CACHE_TIME=1
+       - RATE_UNIT=0
+       - PAGE_REFRESH=0
