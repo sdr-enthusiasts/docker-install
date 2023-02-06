@@ -301,6 +301,218 @@ services:
       - /run:exec,size=64M
       - /var/log
 
+  planefence:
+# Note - after initial startup, please edit /opt/adsb/planefence/config/planefence.config. Then restart this container.
+    image: kx1t/planefence:dev
+#    profiles:
+#      - donotstart
+    tty: true
+    container_name: planefence
+    hostname: planefence
+    networks:
+      - adsb-net
+    restart: always
+    depends_on:
+      - tar1090
+    ports:
+      - 8083:80
+    environment:
+      - TZ=${FEEDER_TZ}
+      - PF_ALERTLIST=${PF_ALERTLIST}
+    volumes:
+      - /opt/adsb/planefence/config:/usr/share/planefence/persist
+      - /opt/adsb/planefence/html:/usr/share/planefence/html
+    tmpfs:
+      - /run:rw,nosuid,nodev,exec,relatime,size=256M
+      - /tmp:rw,nosuid,nodev,noexec,relatime,size=128M
+
+
+  screenshot:
+    image: tedder42/browser-screenshot-service
+#    profiles:
+#      - donotstart
+    tty: true
+    container_name: screenshot
+    hostname: screenshot
+    networks:
+      - adsb-net
+    depends_on:
+      - planefence
+    restart: always
+    shm_size: 1gb
+    environment:
+      - MAP_ARGS=zoom=8.5&hideSidebar&hideButtons&mapDim=0.2&monochromeMarkers=ff0000&outlineColor=505050&iconScale=1.5&enableLabels&extendedLabels=2&trackLabels
+      - LOAD_SLEEP_TIME=25
+      - BASE_URL=http://tar1090
+      - DISABLE_SHM=true
+      - MAXTIME=60
+    ports:
+      - 5042:5042
+
+      #####################################################################################################################################
+  # Reverse Proxy Setup
+
+######################################################################################################################################
+# WebProxy translates unfriendly URLs like http://x.x.x.x:8091 into friendly URLs like http://x.x.x.x/acarshub
+# It also provides GeoIP filtering and Bot Filtering
+# Although it's possible (and easy) to add SSL connectivity for websites that are exposed to the Internet,
+# the setup below doesn't include this. 
+# Additionally, you can host your own web pages in this directory: /opt/adsb/webproxy/html
+
+  webproxy:
+    image: ghcr.io/sdr-enthusiasts/docker-reversewebproxy:latest
+#    profiles:
+#      - donotstart
+    tty: true
+    container_name: webproxy
+    hostname: webproxy
+    restart: always
+    ports:
+      - 80:80
+      - 443:443
+    environment:
+      # ----------------------------------------------------------------------------------------
+      # if AUTOGENERATE is set to ON, it will automatically create a config based on the REVPROXY and REDIRECT parameters below
+      # if it is set to OFF, you should map the volume as shown in the "volumes" section below, and you can edit the "locations.conf" file in that directory.
+      #
+      # If you want to have the system auto-generate a locations.conf file that you will subsequently edit, you can set
+      # AUTOGENERATE=ON, then start the container once, stop the container again, and edit the system generated
+      # locations.conf file. Then, before restarting, please make sure to set AUTOGENERATE=OFF below.
+      - AUTOGENERATE=ON
+      # ----------------------------------------------------------------------------------------
+      # VERBOSELOGS indicates if the web server logs are written to the Docker Container logs
+      # (accessible with `docker logs webproxy`) or that they are discarded. Values are ON (default) or OFF
+      - VERBOSELOG=ON
+      # ----------------------------------------------------------------------------------------
+      # REVPROXY has the following format:
+      #     urltarget,destination
+      # For example, for REVPROXY=readsb|http://10.0.0.191:8080,
+      # a user browsing to http://mydomain/readsb will be proxied to http://10.0.0.191:8080
+      # The user's browser will *never* see the internal IP address.
+      # Note - both the urltarget and the destination must be URLs or directories, and cannot be
+      # a file name
+      # Optionally, you can add Basic Authentication username(s)/password(s) as well. If the AUTH parameter is set to ON,
+      # any REVPROXY entries that have one or more username/password combinations will only be proxied after the web browser
+      # furnishes the correct credentials. If AUTH is not set to ON, these credentials will be ignored.
+      # Usernames and passwords should not contain any field separators or special characters like ,'"|; or whitespace characters
+      # For example: REVPROXY=readsb|http://10.0.0.191:8080|username1;password1|username2;password2,
+      - REVPROXY=
+                  readsb|http://10.0.0.191:8080,
+                  piaware|http://10.0.0.191:8081,
+                  tar1090|http://10.0.0.191:8082,
+                  planefence|http://10.0.0.191:8083,
+                  planefinder|http://10.0.0.191:8086,
+                  ajax|http://10.0.0.191:8086/ajax,
+                  assets|http://10.0.0.191:8086/assets,
+                  graphs|http://10.0.0.191:8080/graphs,
+                  radar|http://10.0.0.191:8080/radar,
+                  acarshub|http://10.0.0.188:80
+      # ----------------------------------------------------------------------------------------
+      # REDIRECT has the following format:
+      #     urltarget|redirection
+      # For example, for REDIRECT=/planefinder/setup.html|http://10.0.0.191:8086/setup.html,
+      # a user browing to http://mydomain/planefinder/setup.html will be redirected to http://10.0.0.191:8086/setup.html
+      # The user's browser will show the redirection address and try to reach it. If the destination is not reachable (for example
+      # because it is on a isolated subnet), the browser won't be able to render the page.
+      # This can be useful if you want to protect certain pages from view outside your internal network, while exposing
+      # others. See for example the planefinder setup in REVPROXY and REDIRECT.
+      # Note - both the urltarget and the redirection MAY BE a URL or a file names.
+      - REDIRECT=
+                  /planefinder/setup.html|http://10.0.0.191:8086/setup.html,
+                  /planefinder/logs.html|http://10.0.0.191:8086/logs.html
+      #
+      # ----------------------------------------------------------------------------------------
+      # The following settings will enable SSL to be part of the reverse proxy.
+      #
+      # SSL: enable SSL. Accepted values: [ENABLED|DISABLED]. Default: DISABLED
+      # SSL_EMAIL is used to request an SSL certificate from Let's Encrypt. The container
+      # will automatically renew them before the expire as long as you keep the container running.
+      #
+      # Change SSL_TOS=REJECT to SSL_TOS=ACCEPT to indicate you accept the T&S's for the SSL certificate
+      # set forth at https://letsencrypt.org/repository/#let-s-encrypt-subscriber-agreement
+      #
+      # If SSL_REDIRECT=ENABLED then all incoming non-SSL requests will automatically be redirected to a https:// request
+      #
+      # Put 1 or more domain names in SSL_DOMAIN. Note that *ALL OF THESE DOMAINS* must be reachable from the internet
+      # and render a website that is served from the container upon the start of the container,
+      # otherwise the request to get a certificate for them will fail!
+      #
+      # Also note that more than 5 (failed) requests will cause you to be locked out from getting new certificates for
+      # 1 week. We, nor LetsEncrypt, can "unlock" you. More info: https://letsencrypt.org/docs/rate-limits/
+      #
+      - SSL=ENABLED
+      - SSL_EMAIL=your@email.com
+      - SSL_DOMAIN=
+                  my.domain.com,
+                  my.second.domain.com,
+                  my.third.domain.com
+      - SSL_TOS=REJECT
+      - SSL_REDIRECT=ENABLED
+      #
+      # These settings will enable GeoIP inclusion or exclusion of requests based on country.
+      # Country names are two-letter abbreviations corresponding to the country suffix used in domain names.
+      # GEOIP_DEFAULT is "allow" (allow all except for country list)
+      #                  "block" (block all except for country list)
+      #                  <empty> no GeoIP blocking
+      # GEOIP_RESPONSECODE indicates which HTTP response is sent when a bot is blocked.
+      # Default code if omitted is 403 (Forbidden). Other codes that may be useful:
+      # 402 (payment required, hehe), 404 (doesnt exist), 418 (I am a teapot - used to tell requestors to go away), 410 (Gone), 500 (Internal Server Error),
+      # 503 (service unavailable), etc - see https://developer.mozilla.org/en-US/docs/Web/HTTP/Status
+      - GEOIP_RESPONSECODE=418
+      - GEOIP_DEFAULT=allow
+      - GEOIP_COUNTRIES=cn,ru
+      #
+      # AUTH -- a basic mechanism to use basic authentication
+      #
+      # Although it's possible to put the usernames and passwords here, we strongly advice to put them in a variable in a `.env` file
+      # AUTH=ON -- Basic Authentication is enabled
+      # AUTH=OFF or not defined or empty -- Basic Authentication is disabled
+      #
+      # Add credentials usernames for the local web serverlike this: (note -- this parameter structure is not yet future proof and may change when we add per-website authentication)
+      # LOCA_CREDS=<username1>|<password1>,<username2>|<password2>,...
+      # Local Credentials work only for the local website. If you want to define a credential for a specific
+      # REVPROXY destination, you can do so with the REVPROXY parameter (see above).
+      # You cannot use Basic Authentication for a REDIRECT entry; this should be implemented by the target website instead.
+      #
+      #
+      - AUTH=OFF
+      #LOCAL_CREDS=""
+      #
+      # BLOCKBOT blocks bots of which the User Agent contains all or part of these comma-separated strings:
+      - BLOCKBOT=
+                  bot,LieBaoFast,UCBrowser,MQQBrowser,Mb2345Browser,https://gdnplus.com,facebookexternalhit,google,bing,yandex,msnbot,wp-login.php,zgrab,zgrab2,
+                  AltaVista,Googlebot,Slurp,BlackWidow,Bot,ChinaClaw,Custo,DISCo,Download,Demon,eCatch,EirGrabber,EmailSiphon,EmailWolf,SuperHTTP,Surfbot,WebWhacker,
+                  Express,WebPictures,ExtractorPro,EyeNetIE,FlashGet,GetRight,GetWeb!,Go!Zilla,Go-Ahead-Got-It,GrabNet,Grafula,HMView,Go!Zilla,Go-Ahead-Got-It,
+                  rafula,HMView,HTTrack,Stripper,Sucker,Indy,InterGET,Ninja,JetCar,Spider,larbin,LeechFTP,Downloader,tool,Navroad,NearSite,NetAnts,tAkeOut,WWWOFFLE,
+                  GrabNet,NetSpider,Vampire,NetZIP,Octopus,Offline,PageGrabber,Foto,pavuk,pcBrowser,RealDownload,ReGet,SiteSnagger,SmartDownload,SuperBot,WebSpider,
+                  Teleport,VoidEYE,Collector,WebAuto,WebCopier,WebFetch,WebGo,WebLeacher,WebReaper,WebSauger,eXtractor,Quester,WebStripper,WebZIP,Widow,Zeus,
+                  Twengabot,htmlparser,libwww,Python,perl,urllib,scan,email,PycURL,Pyth,PyQ,WebCollector,WebCopy,webcraw,PetalBot,ubermetrics,Firefox/45,
+                  Vert.x-WebClient,jsonlite,rv:45.0,Nexgate Ruby Client,scoop.it,NetSystemsResearch,Barkrowler,Python-Requests,Expanse,Go-http-client,scpitspi-rs
+      #
+      # BLOCKBOT_RESPONSECODE indicates which HTTP response is sent when a bot is blocked.
+      # Default code if omitted is 403 (Forbidden). Other codes that may be useful:
+      # 402 (payment required, hehe), 404 (doesnt exist), 418 (I am a teapot - used to tell requestors to go away), 410 (Gone), 500 (Internal Server Error),
+      # 503 (service unavailable), etc - see https://developer.mozilla.org/en-US/docs/Web/HTTP/Status
+      - BLOCKBOT_RESPONSECODE=403
+      #
+      # IPV6 indicates if IPV6 is enabled or disabled on the host and/or docker system.
+      # If you disable IPV6 on your system, you may see a container error if you don't set this parameter to "OFF" or "DISABLED" (case insensitive).
+      # If the parameter is omitted, the system will assume that IPV6 is enabled.
+      - IPV6=ENABLED
+      #
+      # IPTABLES_BLOCK switches `iptables` based blocking of IP addresses on or off. Default when omitted = off.
+      # See README.md for more explanation. Note -- in order for this to work, you MUST add the NET_ADMIN capacity to the container as shown below.
+      - IPTABLES_BLOCK=ENABLED
+      - IPJAILTIME=21600
+    cap_add:
+      - NET_ADMIN
+    tmpfs:
+      - /tmp:rw,nosuid,nodev,noexec,relatime,size=128M
+      - /var/log/nginx:rw,nosuid,nodev,noexec,relatime,size=128M
+    volumes:
+      - /opt/adsb/webproxy:/run/nginx
+      - "/etc/localtime:/etc/localtime:ro"
+      - "/etc/timezone:/etc/timezone:ro"
   ######################################################################################################################################
   # Finally, a few "maintenance" containers that keep the rest of the stack healthy and up to date:
   # vnstat: shows network usage on a per interface (global and per container) basis
