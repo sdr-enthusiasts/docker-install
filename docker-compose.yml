@@ -1,7 +1,8 @@
 version: "3.8"
 
 networks:
-  adsb-net:
+  default:
+    name: adsb-net
 
 services:
   ######################################################################################################################################
@@ -22,8 +23,6 @@ services:
     tty: true
     container_name: readsb
     hostname: readsb
-    networks:
-      - adsb-net
     restart: always
     labels:
       - "autoheal=true"
@@ -77,8 +76,6 @@ services:
     tty: true
     container_name: mlathub
     hostname: mlathub
-    networks:
-      - adsb-net
     restart: always
     labels:
       - "autoheal=true"
@@ -119,8 +116,6 @@ services:
     tty: true
     container_name: multifeeder
     hostname: multifeeder
-    networks:
-      - adsb-net
     restart: always
     environment:
       - TZ=${FEEDER_TZ}
@@ -167,8 +162,6 @@ services:
     tty: true
     container_name: piaware
     hostname: piaware
-    networks:
-      - adsb-net
     restart: always
     labels:
       - "autoheal=true"
@@ -197,8 +190,6 @@ services:
     tty: true
     container_name: fr24
     hostname: fr24
-    networks:
-      - adsb-net
     restart: always
     labels:
       - "autoheal=true"
@@ -222,8 +213,6 @@ services:
     tty: true
     container_name: planewatch
     hostname: planewatch
-    networks:
-      - adsb-net
     restart: always
     depends_on:
       - readsb
@@ -249,8 +238,6 @@ services:
     tty: true
     container_name: adsbhub
     hostname: adsbhub
-    networks:
-      - adsb-net
     restart: always
     environment:
       - TZ=${FEEDER_TZ}
@@ -271,8 +258,6 @@ services:
     tty: true
     container_name: tar1090
     hostname: tar1090
-    networks:
-      - adsb-net
     restart: always
     depends_on:
       - readsb
@@ -309,8 +294,6 @@ services:
     tty: true
     container_name: planefence
     hostname: planefence
-    networks:
-      - adsb-net
     restart: always
     depends_on:
       - tar1090
@@ -334,8 +317,6 @@ services:
     tty: true
     container_name: screenshot
     hostname: screenshot
-    networks:
-      - adsb-net
     depends_on:
       - planefence
     restart: always
@@ -440,14 +421,14 @@ services:
       # Also note that more than 5 (failed) requests will cause you to be locked out from getting new certificates for
       # 1 week. We, nor LetsEncrypt, can "unlock" you. More info: https://letsencrypt.org/docs/rate-limits/
       #
-      - SSL=ENABLED
-      - SSL_EMAIL=your@email.com
-      - SSL_DOMAIN=
-                  my.domain.com,
-                  my.second.domain.com,
-                  my.third.domain.com
-      - SSL_TOS=REJECT
-      - SSL_REDIRECT=ENABLED
+      - SSL=DISABLED
+      # - SSL_EMAIL=your@email.com
+      # - SSL_DOMAIN=
+      #             my.domain.com,
+      #             my.second.domain.com,
+      #             my.third.domain.com
+      # - SSL_TOS=REJECT
+      # - SSL_REDIRECT=ENABLED
       #
       # These settings will enable GeoIP inclusion or exclusion of requests based on country.
       # Country names are two-letter abbreviations corresponding to the country suffix used in domain names.
@@ -513,6 +494,7 @@ services:
       - /opt/adsb/webproxy:/run/nginx
       - "/etc/localtime:/etc/localtime:ro"
       - "/etc/timezone:/etc/timezone:ro"
+
   ######################################################################################################################################
   # Finally, a few "maintenance" containers that keep the rest of the stack healthy and up to date:
   # vnstat: shows network usage on a per interface (global and per container) basis
@@ -523,9 +505,6 @@ services:
     image: vergoh/vnstat
     container_name: vnstat
     restart: unless-stopped
-    network_mode: "host"
-    networks:
-      - adsb-net
     ports:
       - 8685:8685
     volumes:
@@ -547,8 +526,6 @@ services:
     tty: true
     container_name: autoheal
     hostname: autoheal
-    networks:
-      - adsb-net
     restart: always
     environment:
       - AUTOHEAL_CONTAINER_LABEL=all
@@ -560,8 +537,6 @@ services:
     tty: true
     container_name: watchtower
     hostname: watchtower
-    networks:
-      - adsb-net
     restart: always
     environment:
       - TZ=${FEEDER_TZ}
@@ -577,10 +552,7 @@ services:
   influxdb:
     image: influxdb
     container_name: influxdb
-    networks:
-      - adsb-net
     restart: unless-stopped
-    #network_mode: "host"
     ports:
       - 8086:8086
     volumes:
@@ -603,9 +575,6 @@ services:
     image: grafana/grafana-oss
     container_name: grafana
     restart: unless-stopped
-    networks:
-      - adsb-net
-    #network_mode: "host"
     ports:
       - 3000:3000
     volumes:
