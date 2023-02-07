@@ -311,7 +311,7 @@ services:
 
 
   screenshot:
-    image: tedder42/browser-screenshot-service
+    image: ghcr.io/kx1t/screenshot
 #    profiles:
 #      - donotstart
     tty: true
