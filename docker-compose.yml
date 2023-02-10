@@ -71,8 +71,8 @@ services:
     # mlathub aggregates the MLAT results from various containers and makes this available to the visualization programs for display
     # Note - remove any unused services from the READSB_NET_CONNECTOR parameter
     image: ghcr.io/sdr-enthusiasts/docker-readsb-protobuf
-    #    profiles:
-    #      - donotstart
+    profiles:
+      - donotstart
     tty: true
     container_name: mlathub
     hostname: mlathub
