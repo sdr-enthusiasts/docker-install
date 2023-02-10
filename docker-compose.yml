@@ -117,6 +117,8 @@ services:
     container_name: multifeeder
     hostname: multifeeder
     restart: always
+    depends_on:
+      - readsb
     environment:
       - TZ=${FEEDER_TZ}
       - READSB_NET_CONNECTOR=readsb,30105,beast_in;dump978,30978,raw_in;feed.adsb.fi,30004,beast_out;feed.adsb.one,64004,beast_out;in.adsb.lol,30004,beast_out
@@ -239,6 +241,8 @@ services:
     container_name: adsbhub
     hostname: adsbhub
     restart: always
+    depends_on:
+      - readsb
     environment:
       - TZ=${FEEDER_TZ}
       - SBSHOST=readsb
