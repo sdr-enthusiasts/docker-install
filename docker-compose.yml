@@ -391,7 +391,7 @@ services:
                   assets|http://10.0.0.191:8086/assets,
                   graphs|http://10.0.0.191:8080/graphs,
                   radar|http://10.0.0.191:8080/radar,
-                  acarshub|http://10.0.0.188:80
+                  #acarshub|http://10.0.0.188:80
       # ----------------------------------------------------------------------------------------
       # REDIRECT has the following format:
       #     urltarget|redirection
