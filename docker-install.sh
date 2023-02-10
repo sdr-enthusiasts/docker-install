@@ -240,6 +240,7 @@ then
         # Next, blacklist the drivers so the dongles stay accessible
         echo -n "Blacklisting any competing RTL-SDR drivers... "
         sudo -E "$(which bash)" -c "echo blacklist dvb_usb_rtl28xxu >>/etc/modprobe.d/blacklist-rtl2832.conf"
+        sudo -E "$(which bash)" -c "echo blacklist r820t >/etc/modprobe.d/blacklist-rtl2832.conf"
         sudo -E "$(which bash)" -c "echo blacklist rtl2832 >/etc/modprobe.d/blacklist-rtl2832.conf"
         sudo -E "$(which bash)" -c "echo blacklist rtl2832_sdr >>/etc/modprobe.d/blacklist-rtl2832.conf"
         sudo -E "$(which bash)" -c "echo blacklist rtl2838 >>/etc/modprobe.d/blacklist-rtl2832.conf"
@@ -247,6 +248,7 @@ then
         # Unload any existing drivers, suppress any error messages that are displayed when the driver wasnt loaded:
         echo -n "Unloading any preloaded RTL-SDR drivers... ignore any error messages:"
         sudo -E "$(which bash)" -c "rmmod dvb_usb_rtl28xxu 2>/dev/null"
+        sudo -E "$(which bash)" -c "rmmod r820t 2>/dev/null"
         sudo -E "$(which bash)" -c "rmmod rtl2832 2>/dev/null"
         sudo -E "$(which bash)" -c "rmmod rtl2832_sdr 2>/dev/null"
         sudo -E "$(which bash)" -c "rmmod rtl2838 2>/dev/null"
