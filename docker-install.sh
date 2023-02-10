@@ -36,11 +36,10 @@ echo "If you have an old device usign Debian Stretch, we will try to install the
 echo "Docker for Stretch is deprecated and is no longer actively supported by the Docker community."
 echo
 
-if [[ "$(whoami)" == "root" ]]
-then
-    echo "STOP -- you are logged in as user \"root\". Don't install your Docker things as \"root\". Not good. Really!"
-    echo "Please log out from this account, log in as some other user, and run this script again."
-    echo "If you don't know how to create a new user, you can read up on it here: https://linuxize.com/post/how-to-create-a-sudo-user-on-debian/"
+if [[ "$EUID" == 0 ]]; then
+    echo "STOP -- you are running this as an account with superuser privileges (ie: root), but should not be. It is best practice to NOT install Docker services as \"root\"."
+    echo "Instead please log out from this account, log in as a different non-superuser account, and rerun this script."
+    echo "If you are unsure of how to create a new user, you can learn how here: https://linuxize.com/post/how-to-create-a-sudo-user-on-debian/"
     echo ""
     exit 1
 fi
@@ -240,27 +239,29 @@ then
         sudo -E "$(which bash)" -c "curl -sL -o /etc/udev/rules.d/rtl-sdr.rules https://raw.githubusercontent.com/wiedehopf/adsb-scripts/master/osmocom-rtl-sdr.rules"
         # Next, blacklist the drivers so the dongles stay accessible
         echo -n "Blacklisting any competing RTL-SDR drivers... "
-        sudo -E "$(which bash)" -c "echo blacklist rtl2832 >/etc/modprobe.d/blacklist-rtl2832.conf"
         sudo -E "$(which bash)" -c "echo blacklist dvb_usb_rtl28xxu >>/etc/modprobe.d/blacklist-rtl2832.conf"
+        sudo -E "$(which bash)" -c "echo blacklist rtl2832 >/etc/modprobe.d/blacklist-rtl2832.conf"
         sudo -E "$(which bash)" -c "echo blacklist rtl2832_sdr >>/etc/modprobe.d/blacklist-rtl2832.conf"
-        sudo -E "$(which bash)" -c "echo blacklist rtl8xxxu >>/etc/modprobe.d/blacklist-rtl2832.conf"
         sudo -E "$(which bash)" -c "echo blacklist rtl2838 >>/etc/modprobe.d/blacklist-rtl2832.conf"
-
+        sudo -E "$(which bash)" -c "echo blacklist rtl8xxxu >>/etc/modprobe.d/blacklist-rtl2832.conf"
         # Unload any existing drivers, suppress any error messages that are displayed when the driver wasnt loaded:
         echo -n "Unloading any preloaded RTL-SDR drivers... ignore any error messages:"
-        sudo -E "$(which bash)" -c "rmmod rtl2832_sdr 2>/dev/null"
         sudo -E "$(which bash)" -c "rmmod dvb_usb_rtl28xxu 2>/dev/null"
         sudo -E "$(which bash)" -c "rmmod rtl2832 2>/dev/null"
-        sudo -E "$(which bash)" -c "rmmod rtl8xxxu 2>/dev/null"
+        sudo -E "$(which bash)" -c "rmmod rtl2832_sdr 2>/dev/null"
         sudo -E "$(which bash)" -c "rmmod rtl2838 2>/dev/null"
+        sudo -E "$(which bash)" -c "rmmod rtl8xxxu 2>/dev/null"
     popd >/dev/null
-    rm -rf "$tmpdir"
+    # Check tmpdir is set and not null before attempting to remove it
+    if [[ -z "$tmpdir" ]]; then
+            rm -rf "$tmpdir"
+    fi
 fi
 echo "Making sure commands will persist when the terminal closes..."
 sudo loginctl enable-linger "$(whoami)"
 if grep "denyinterfaces veth\*" /etc/dhcpcd.conf >/dev/null 2>&1
 then
-  echo -n "Excluding veth interfaces from dhcp. This will prevent problems if you are connected to the internet via Wifi when running many Docker containers... "
+  echo -n "Excluding veth interfaces from dhcp. This will prevent problems if you are connected to the internet via WiFi when running many Docker containers... "
   sudo sh -c 'echo "denyinterfaces veth*" >> /etc/dhcpcd.conf'
   echo "done!"
 fi
