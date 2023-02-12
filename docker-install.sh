@@ -233,22 +233,23 @@ then
     tmpdir=$(mktemp -d)
     pushd "$tmpdir" >/dev/null || exit
         echo -n "Getting the latest RTL-SDR packages... "
-        sudo apt-get install -qq -y git rtl-sdr >/dev/null
+        sudo apt install -qq -y git rtl-sdr >/dev/null
         echo -n "Getting the latest UDEV rules... "
         # First install the UDEV rules for RTL-SDR dongles
         sudo -E "$(which bash)" -c "curl -sL -o /etc/udev/rules.d/rtl-sdr.rules https://raw.githubusercontent.com/wiedehopf/adsb-scripts/master/osmocom-rtl-sdr.rules"
         # Next, blacklist the drivers so the dongles stay accessible
         echo -n "Blacklisting any competing RTL-SDR drivers... "
-        sudo -E "$(which bash)" -c "echo blacklist dvb_core >>/etc/modprobe.d/blacklist-rtl2832.conf"
-        sudo -E "$(which bash)" -c "echo blacklist dvb_usb_rtl2832u >>/etc/modprobe.d/blacklist-rtl2832.conf"
-        sudo -E "$(which bash)" -c "echo blacklist dvb_usb_rtl28xxu >>/etc/modprobe.d/blacklist-rtl2832.conf"
-        sudo -E "$(which bash)" -c "echo blacklist dvb_usb_v2 >>/etc/modprobe.d/blacklist-rtl2832.conf"
-        sudo -E "$(which bash)" -c "echo blacklist r820t >/etc/modprobe.d/blacklist-rtl2832.conf"
-        sudo -E "$(which bash)" -c "echo blacklist rtl2830 >/etc/modprobe.d/blacklist-rtl2832.conf"
-        sudo -E "$(which bash)" -c "echo blacklist rtl2832 >/etc/modprobe.d/blacklist-rtl2832.conf"
-        sudo -E "$(which bash)" -c "echo blacklist rtl2832_sdr >>/etc/modprobe.d/blacklist-rtl2832.conf"
-        sudo -E "$(which bash)" -c "echo blacklist rtl2838 >>/etc/modprobe.d/blacklist-rtl2832.conf"
-        sudo -E "$(which bash)" -c "echo blacklist rtl8xxxu >>/etc/modprobe.d/blacklist-rtl2832.conf"
+        sudo -E "$(which bash)" -c "echo blacklist dvb_core >>/etc/modprobe.d/blacklist-rtlsdr.conf"
+        sudo -E "$(which bash)" -c "echo blacklist dvb_usb_rtl2832u >>/etc/modprobe.d/blacklist-rtlsdr.conf"
+        sudo -E "$(which bash)" -c "echo blacklist dvb_usb_rtl28xxu >>/etc/modprobe.d/blacklist-rtlsdr.conf"
+        sudo -E "$(which bash)" -c "echo blacklist dvb_usb_v2 >>/etc/modprobe.d/blacklist-rtlsdr.conf"
+        sudo -E "$(which bash)" -c "echo blacklist r820t >/etc/modprobe.d/blacklist-rtlsdr.conf"
+        sudo -E "$(which bash)" -c "echo blacklist rtl2830 >/etc/modprobe.d/blacklist-rtlsdr.conf"
+        sudo -E "$(which bash)" -c "echo blacklist rtl2832 >/etc/modprobe.d/blacklist-rtlsdr.conf"
+        sudo -E "$(which bash)" -c "echo blacklist rtl2832_sdr >>/etc/modprobe.d/blacklist-rtlsdr.conf"
+        sudo -E "$(which bash)" -c "echo blacklist rtl2838 >>/etc/modprobe.d/blacklist-rtlsdr.conf"
+        sudo -E "$(which bash)" -c "echo blacklist rtl8192cu >>/etc/modprobe.d/blacklist-rtlsdr.conf"
+        sudo -E "$(which bash)" -c "echo blacklist rtl8xxxu >>/etc/modprobe.d/blacklist-rtlsdr.conf"
         # Unload any existing drivers, suppress any error messages that are displayed when the driver wasnt loaded:
         echo -n "Unloading any preloaded RTL-SDR drivers... ignore any error messages:"
         sudo -E "$(which bash)" -c "rmmod dvb_core 2>/dev/null"
@@ -260,6 +261,7 @@ then
         sudo -E "$(which bash)" -c "rmmod rtl2832 2>/dev/null"
         sudo -E "$(which bash)" -c "rmmod rtl2832_sdr 2>/dev/null"
         sudo -E "$(which bash)" -c "rmmod rtl2838 2>/dev/null"
+        sudo -E "$(which bash)" -c "rmmod rtl8192cu 2>/dev/null"        
         sudo -E "$(which bash)" -c "rmmod rtl8xxxu 2>/dev/null"
     popd >/dev/null
     # Check tmpdir is set and not null before attempting to remove it
@@ -271,7 +273,7 @@ echo "Making sure commands will persist when the terminal closes..."
 sudo loginctl enable-linger "$(whoami)"
 if grep "denyinterfaces veth\*" /etc/dhcpcd.conf >/dev/null 2>&1
 then
-  echo -n "Excluding veth interfaces from dhcp. This will prevent problems if you are connected to the internet via WiFi when running many Docker containers... "
+  echo -n "Excluding virtual ethernet interfaces from DHCP. This will prevent problems if you are connected to the internet via WiFi when running many Docker containers... "
   sudo sh -c 'echo "denyinterfaces veth*" >> /etc/dhcpcd.conf'
   echo "done!"
 fi
