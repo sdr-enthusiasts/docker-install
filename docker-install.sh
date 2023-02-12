@@ -233,7 +233,7 @@ then
     tmpdir=$(mktemp -d)
     pushd "$tmpdir" >/dev/null || exit
         echo -n "Getting the latest RTL-SDR packages... "
-        sudo apt install -qq -y git rtl-sdr >/dev/null
+        sudo apt-get install -qq -y git rtl-sdr >/dev/null
         echo -n "Getting the latest UDEV rules... "
         # First install the UDEV rules for RTL-SDR dongles
         sudo -E "$(which bash)" -c "curl -sL -o /etc/udev/rules.d/rtl-sdr.rules https://raw.githubusercontent.com/wiedehopf/adsb-scripts/master/osmocom-rtl-sdr.rules"
