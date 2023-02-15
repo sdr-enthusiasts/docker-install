@@ -180,6 +180,7 @@ services:
 
   piaware:
 # piaware feeds ADS-B and UAT data (from readsb) to FlightAware. It also includes a GUI Radar website and a status website   
+# If you're not capturing UAT data with the dump978 container, remove or comment out the UAT_RECEIVER_TYPE and UAT_RECEIVER_HOST lines in the environment section below.
     image: ghcr.io/sdr-enthusiasts/docker-piaware
 #    profiles:
 #      - donotstart
@@ -200,6 +201,8 @@ services:
       - LONG=${FEEDER_LONG}
       - TZ=${FEEDER_TZ}
       - FEEDER_ID=${PIAWARE_FEEDER_ID}
+      - UAT_RECEIVER_TYPE=relay
+      - UAT_RECEIVER_HOST=dump978
     tmpfs:
       - /run:exec,size=64M
       - /var/log
@@ -249,6 +252,7 @@ services:
 
   rbfeeder:
 # rbfeeder feeds ADS-B and UAT data (from readsb) to RadarBox.
+# If you're not capturing UAT data with the dump978 container, remove or comment out the UAT_RECEIVER_HOST line in the environment section below.
     image: ghcr.io/sdr-enthusiasts/docker-radarbox
 #    profiles:
 #      - donotstart
@@ -262,6 +266,7 @@ services:
       - readsb
     environment:
       - BEASTHOST=readsb
+      - UAT_RECEIVER_HOST=dump978
       - LAT=${FEEDER_LAT}
       - LONG=${FEEDER_LONG}
       - ALT=${FEEDER_ALT_M}
