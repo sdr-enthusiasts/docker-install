@@ -261,6 +261,7 @@ then
         sudo -E "$(which bash)" -c "rmmod rtl2832_sdr 2>/dev/null"
         sudo -E "$(which bash)" -c "rmmod rtl2838 2>/dev/null"
         sudo -E "$(which bash)" -c "rmmod rtl8xxxu 2>/dev/null"
+        which update-initramfs >/dev/null 2>&1 && sudo update-initramfs -u || true 
     popd >/dev/null
     # Check tmpdir is set and not null before attempting to remove it
     if [[ -z "$tmpdir" ]]; then
