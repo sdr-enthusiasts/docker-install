@@ -214,7 +214,7 @@ then
         BLOCKED_MODULES+=("rtl8xxxu")
         BLOCKED_MODULES+=("dvb_core")
         echo -n "Excluding and unloading any competing RTL-SDR drivers... "
-        for for module in "${BLOCKED_MODULES[@]}"
+        for module in "${BLOCKED_MODULES[@]}"
         do
             if ! grep -q $module /etc/modprobe.d/exclusions-rtl2832.conf
             then
