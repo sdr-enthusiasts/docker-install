@@ -220,7 +220,7 @@ then
             then
               sudo -E "$(which bash)" -c "echo blacklist $module >>/etc/modprobe.d/exclusions-rtl2832.conf"
               sudo -E "$(which bash)" -c "rmmod $module 2>/dev/null" || true
-`      `    fi
+            fi
         done
         # On systems with initramfs, this needs to be updated to make sure the exclusions take effect:
         which update-initramfs >/dev/null 2>&1 && sudo update-initramfs -u || true 
