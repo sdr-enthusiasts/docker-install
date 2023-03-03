@@ -3,7 +3,7 @@
 # DOCKER-INSTALL.SH -- Installation script for the Docker infrastructure on a Raspbian or Ubuntu system
 # Usage: source <(curl -s https://raw.githubusercontent.com/sdr-enthusiasts/docker-install/main/docker-install.sh)
 #
-# Copyright 2021, 2022, Ramon F. Kolb (kx1t)- licensed under the terms and conditions
+# Copyright 2021-2023 Ramon F. Kolb (kx1t)- licensed under the terms and conditions
 # of the MIT license. The terms and conditions of this license are included with the Github
 # distribution of this package.
 
@@ -124,7 +124,7 @@ EOF
     fi
 fi
 
-echo -n "Checking for Docker-compose installation... "
+echo -n "Checking for Docker Compose installation... "
 if which docker-compose >/dev/null 2>&1
 then
     echo "found! No need to install..."
@@ -136,54 +136,16 @@ then
 else
     echo "not found!"
     echo "Installing Docker-compose... "
-
-    # new method --get the plugin through apt. This means that it will be maintained through package upgrades in the future
     sudo apt install -y docker-compose-plugin
     echo "alias docker-compose=\"docker compose\"" >> ~/.bash_aliases
     source ~/.bash_aliases
 
-    # old way -- install it manually from the repo. No longer recommended (but it should still work)
-    #            also - this was hard-pegged against a specific docker-compose version and needed manual changes to the script
-    #            to configure newer releases.
-    #
-    # # Do a bunch of prep work
-    # DC_ARCHS=("darwin-aarch64")
-    # DC_ARCHS+=("darwin-x86_64")
-    # DC_ARCHS+=("linux-aarch64")
-    # DC_ARCHS+=("linux-armv6")
-    # DC_ARCHS+=("linux-armv7")
-    # DC_ARCHS+=("linux-s390x")
-    # DC_ARCHS+=("linux-x86_64")
-    #
-    # OS_NAME="$(uname -s)"
-    # OS_NAME="${OS_NAME,,}"
-    # ARCH_NAME="$(uname -m)"
-    # ARCH_NAME="${ARCH_NAME,,}"
-    # [[ "${ARCH_NAME:0:5}" == "armv6" ]] && ARCH_NAME="armv6"
-    # [[ "${ARCH_NAME:0:5}" == "armv7" ]] && ARCH_NAME="armv7"
-    # [[ "${ARCH_NAME:0:5}" == "armhf" ]] && ARCH_NAME="armv7"
-    # [[ "${ARCH_NAME:0:5}" == "armel" ]] && ARCH_NAME="armv6"
-    #
-    # if [[ ! "${DC_ARCHS[*]}" =~ "${OS_NAME}-${ARCH_NAME}" ]]
-    # then
-    #   echo "Cannot install Docker-Compose for your system \"${OS_NAME}-${ARCH_NAME}\" because there is no suitable install candidate."
-    #   echo "You may be able to install it manually or compile from source; see https://github.com/docker/compose/releases"
-    # else
-    #   sudo curl -L "https://github.com/docker/compose/releases/download/v2.9.0/docker-compose-${OS_NAME}-${ARCH_NAME}" -o /usr/local/bin/docker-compose
-    #   # sudo curl -L "https://github.com/docker/compose/releases/download/latest/docker-compose-${OS_NAME}-${ARCH_NAME}" -o /usr/local/bin/docker-compose
-    #   sudo chmod +x /usr/local/bin/docker-compose
-    #   sudo ln -sf /usr/local/bin/docker-compose /usr/bin/docker-compose
-    #   [[ -d "/usr/local/lib/docker/cli-plugins" ]] && sudo ln -s /usr/local/bin/docker-compose /usr/local/lib/docker/cli-plugins
-    #   [[ -d "/usr/lib/docker/cli-plugins" ]] && sudo ln -s /usr/local/bin/docker-compose /usr/lib/docker/cli-plugins
-    #   [[ -d "/usr/local/libexec/docker/cli-plugins" ]] && sudo ln -s /usr/local/bin/docker-compose /usr/local/libexec/docker/cli-plugins
-    #   [[ -d "/usr/libexec/docker/cli-plugins" ]] && sudo ln -s /usr/local/bin/docker-compose /usr/libexec/docker/cli-plugins
-      if docker-compose version
-      then
-        echo "Docker-compose was installed successfully."
-      else
-        echo "Docker-compose was not installed correctly - you may need to do this manually."
-      fi
-    # fi
+    if docker-compose version
+    then
+      echo "Docker-compose was installed successfully. You can use either \"docker compose\" or \"docker-compose\", they are aliases of each other"
+    else
+      echo "Docker-compose was not installed correctly - you may need to do this manually."
+    fi
 fi
 
 # Now make sure that libseccomp2 >= version 2.4. This is necessary for Bullseye-based containers
@@ -237,39 +199,40 @@ then
         echo -n "Getting the latest UDEV rules... "
         # First install the UDEV rules for RTL-SDR dongles
         sudo -E "$(which bash)" -c "curl -sL -o /etc/udev/rules.d/rtl-sdr.rules https://raw.githubusercontent.com/wiedehopf/adsb-scripts/master/osmocom-rtl-sdr.rules"
-        # Next, blacklist the drivers so the dongles stay accessible
-        echo -n "Blacklisting any competing RTL-SDR drivers... "
-        sudo -E "$(which bash)" -c "echo blacklist dvb_core >>/etc/modprobe.d/blacklist-rtl2832.conf"
-        sudo -E "$(which bash)" -c "echo blacklist dvb_usb_rtl2832u >>/etc/modprobe.d/blacklist-rtl2832.conf"
-        sudo -E "$(which bash)" -c "echo blacklist dvb_usb_rtl28xxu >>/etc/modprobe.d/blacklist-rtl2832.conf"
-        sudo -E "$(which bash)" -c "echo blacklist dvb_usb_v2 >>/etc/modprobe.d/blacklist-rtl2832.conf"
-        sudo -E "$(which bash)" -c "echo blacklist r820t >/etc/modprobe.d/blacklist-rtl2832.conf"
-        sudo -E "$(which bash)" -c "echo blacklist rtl2830 >/etc/modprobe.d/blacklist-rtl2832.conf"
-        sudo -E "$(which bash)" -c "echo blacklist rtl2832 >/etc/modprobe.d/blacklist-rtl2832.conf"
-        sudo -E "$(which bash)" -c "echo blacklist rtl2832_sdr >>/etc/modprobe.d/blacklist-rtl2832.conf"
-        sudo -E "$(which bash)" -c "echo blacklist rtl2838 >>/etc/modprobe.d/blacklist-rtl2832.conf"
-        sudo -E "$(which bash)" -c "echo blacklist rtl8xxxu >>/etc/modprobe.d/blacklist-rtl2832.conf"
-        # Unload any existing drivers, suppress any error messages that are displayed when the driver wasnt loaded:
-        echo -n "Unloading any preloaded RTL-SDR drivers... ignore any error messages:"
-        sudo -E "$(which bash)" -c "rmmod dvb_core 2>/dev/null"
-        sudo -E "$(which bash)" -c "rmmod dvb_usb_rtl2832u 2>/dev/null"
-        sudo -E "$(which bash)" -c "rmmod dvb_usb_rtl28xxu 2>/dev/null"
-        sudo -E "$(which bash)" -c "rmmod dvb_usb_v2 2>/dev/null"
-        sudo -E "$(which bash)" -c "rmmod r820t 2>/dev/null"
-        sudo -E "$(which bash)" -c "rmmod rtl2830 2>/dev/null"
-        sudo -E "$(which bash)" -c "rmmod rtl2832 2>/dev/null"
-        sudo -E "$(which bash)" -c "rmmod rtl2832_sdr 2>/dev/null"
-        sudo -E "$(which bash)" -c "rmmod rtl2838 2>/dev/null"
-        sudo -E "$(which bash)" -c "rmmod rtl8xxxu 2>/dev/null"
+        # Next, exclude the drivers so the dongles stay accessible
+        # Please keep the list in this order and add any additional ones to the BOTTOM. 
+        BLOCKED_MODULES=()
+        BLOCKED_MODULES+=("rtl2832_sdr")
+        BLOCKED_MODULES+=("dvb_usb_rtl2832u")
+        BLOCKED_MODULES+=("dvb_usb_rtl28xxu")
+        BLOCKED_MODULES+=("dvb_usb_v2")
+        BLOCKED_MODULES+=("r820t")
+        BLOCKED_MODULES+=("rtl2830")
+        BLOCKED_MODULES+=("rtl2832")
+        BLOCKED_MODULES+=("rtl2838")
+        BLOCKED_MODULES+=("rtl8192cu")
+        BLOCKED_MODULES+=("rtl8xxxu")
+        BLOCKED_MODULES+=("dvb_core")
+        echo -n "Excluding and unloading any competing RTL-SDR drivers... "
+        for for module in "${BLOCKED_MODULES[@]}"
+        do
+            if ! grep -q $module /etc/modprobe.d/exclusions-rtl2832.conf
+            then
+              sudo -E "$(which bash)" -c "echo blacklist $module >>/etc/modprobe.d/exclusions-rtl2832.conf"
+              sudo -E "$(which bash)" -c "rmmod $module 2>/dev/null" || true
+`      `    fi
+        done
+        # On systems with initramfs, this needs to be updated to make sure the exclusions take effect:
         which update-initramfs >/dev/null 2>&1 && sudo update-initramfs -u || true 
     popd >/dev/null
     # Check tmpdir is set and not null before attempting to remove it
-    if [[ -z "$tmpdir" ]]; then
-            rm -rf "$tmpdir"
-    fi
+    [[ -z "$tmpdir" ]] && rm -rf "$tmpdir" || true
 fi
 echo "Making sure commands will persist when the terminal closes..."
 sudo loginctl enable-linger "$(whoami)"
+#
+# The following prevents DHCPCD based systems from trying to assign IP addresses to each of the Docker containers.
+# Note that this is not needed or available if the system uses DHCPD instead of DHCPCD.
 if grep "denyinterfaces veth\*" /etc/dhcpcd.conf >/dev/null 2>&1
 then
   echo -n "Excluding veth interfaces from dhcp. This will prevent problems if you are connected to the internet via WiFi when running many Docker containers... "

@@ -1,4 +1,21 @@
 version: '3.8'
+######################################################################################################################################
+# This sample docker-compose.yml file contains example service definitions for many of the SDR-Enthusiasts containers
+# It works in combination with a ".env" file, which contains some of the variables referred to in this file.
+# The general assumption is that both this "docker-compose.yml" file and the accompanying ".env" file will be
+# stored in /opt/adsb. If you use a different directory, you may need to adjust some of the volume definitions. 
+#
+# Copyright 2021-2023 Ramon F. Kolb (kx1t)- licensed under the terms and conditions
+# of the MIT license. The terms and conditions of this license are included with the Github
+# distribution of this package.
+#
+######################################################################################################################################
+#
+# TO DO:
+# - Migrate from using docker-readsb-protobuf to docker-tar1090 (thereby saving 1 container)
+# - add AIS-related container (ShipXplorer, VesselAlert)
+#
+######################################################################################################################################
 
 services:
 ######################################################################################################################################
