@@ -219,7 +219,7 @@ then
             if ! grep -q $module /etc/modprobe.d/exclusions-rtl2832.conf
             then
               sudo -E "$(which bash)" -c "echo blacklist $module >>/etc/modprobe.d/exclusions-rtl2832.conf"
-              sudo -E "$(which bash)" -c "rmmod $module 2>/dev/null" || true
+              sudo -E "$(which bash)" -c "modprobe -r $module 2>/dev/null" || true
             fi
         done
         # On systems with initramfs, this needs to be updated to make sure the exclusions take effect:
