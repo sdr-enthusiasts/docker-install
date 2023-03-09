@@ -94,6 +94,8 @@ else
     "max-size": "10m",
     "max-file": "3"
   }
+  "shutdown-timeout": 300,
+  "live-restore": true
 }
 EOF
     sudo chmod u=rw,go=r /etc/docker/daemon.json
