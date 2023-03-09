@@ -222,6 +222,8 @@ then
               sudo -E "$(which bash)" -c "modprobe -r $module 2>/dev/null" || true
             fi
         done
+        # Rebuild module dependency database factoring in blacklists
+        which depmod >/dev/null 2>&1 && depmod -a || true
         # On systems with initramfs, this needs to be updated to make sure the exclusions take effect:
         which update-initramfs >/dev/null 2>&1 && sudo update-initramfs -u || true 
     popd >/dev/null
