@@ -206,6 +206,7 @@ then
         BLOCKED_MODULES+=("dvb_usb_rtl2832u")
         BLOCKED_MODULES+=("dvb_usb_rtl28xxu")
         BLOCKED_MODULES+=("dvb_usb_v2")
+        BLOCKED_MODULES+=("8192cu")
         BLOCKED_MODULES+=("r820t")
         BLOCKED_MODULES+=("rtl2830")
         BLOCKED_MODULES+=("rtl2832")
