@@ -229,7 +229,9 @@ then
         which update-initramfs >/dev/null 2>&1 && sudo update-initramfs -u || true 
     popd >/dev/null
     # Check tmpdir is set and not null before attempting to remove it
-    [[ -z "$tmpdir" ]] && rm -rf "$tmpdir" || true
+    if [[ -z "$tmpdir" ]]; then
+      rm -rf "$tmpdir" >/dev/null 2>&1
+    fi
 fi
 echo "Making sure commands will persist when the terminal closes..."
 sudo loginctl enable-linger "$(whoami)"
