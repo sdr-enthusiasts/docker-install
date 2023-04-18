@@ -238,10 +238,11 @@ sudo loginctl enable-linger "$(whoami)"
 #
 # The following prevents DHCPCD based systems from trying to assign IP addresses to each of the Docker containers.
 # Note that this is not needed or available if the system uses DHCPD instead of DHCPCD.
-if grep "denyinterfaces veth\*" /etc/dhcpcd.conf >/dev/null 2>&1
+if [[ -f /etc/dhcpcd.conf ]] && ! grep "denyinterfaces veth\*" /etc/dhcpcd.conf >/dev/null 2>&1
 then
   echo -n "Excluding veth interfaces from dhcp. This will prevent problems if you are connected to the internet via WiFi when running many Docker containers... "
   sudo sh -c 'echo "denyinterfaces veth*" >> /etc/dhcpcd.conf'
+  sudo systemctl restart dhcpcd.service
   echo "done!"
 fi
 
