@@ -206,13 +206,13 @@ then
         BLOCKED_MODULES+=("dvb_usb_rtl2832u")
         BLOCKED_MODULES+=("dvb_usb_rtl28xxu")
         BLOCKED_MODULES+=("dvb_usb_v2")
-        BLOCKED_MODULES+=("8192cu")
+        # BLOCKED_MODULES+=("8192cu")
         BLOCKED_MODULES+=("r820t")
         BLOCKED_MODULES+=("rtl2830")
         BLOCKED_MODULES+=("rtl2832")
         BLOCKED_MODULES+=("rtl2838")
-        BLOCKED_MODULES+=("rtl8192cu")
-        BLOCKED_MODULES+=("rtl8xxxu")
+        # BLOCKED_MODULES+=("rtl8192cu")
+        # BLOCKED_MODULES+=("rtl8xxxu")
         BLOCKED_MODULES+=("dvb_core")
         echo -n "Excluding and unloading any competing RTL-SDR drivers... "
         for module in "${BLOCKED_MODULES[@]}"
@@ -234,7 +234,7 @@ then
     fi
 fi
 echo "Making sure commands will persist when the terminal closes..."
-sudo loginctl enable-linger "$(whoami)"
+sudo loginctl enable-linger "$(whoami)" >/dev/null 2>&1
 #
 # The following prevents DHCPCD based systems from trying to assign IP addresses to each of the Docker containers.
 # Note that this is not needed or available if the system uses DHCPD instead of DHCPCD.
