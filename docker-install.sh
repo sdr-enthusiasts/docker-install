@@ -225,9 +225,9 @@ then
             fi
         done
         # Rebuild module dependency database factoring in blacklists
-        which depmod >/dev/null 2>&1 && depmod -a || UNLOAD_SUCCESS=false
+        which depmod >/dev/null 2>&1 && sudo depmod -a  >/dev/null 2>&1 || UNLOAD_SUCCESS=false
         # On systems with initramfs, this needs to be updated to make sure the exclusions take effect:
-        which update-initramfs >/dev/null 2>&1 && sudo update-initramfs -u || true 
+        which update-initramfs >/dev/null 2>&1 && sudo update-initramfs -u  >/dev/null 2>&1 || true 
 
         if [[ "${UNLOAD_SUCCESS}" == false ]]; then
           echo "INFO: Although we've successfully excluded any competing RTL-SDR drivers, we weren't able to unload them. This will remedy itself when you reboot your system after the script finishes."
