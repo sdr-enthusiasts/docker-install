@@ -215,18 +215,23 @@ then
         # BLOCKED_MODULES+=("rtl8xxxu")
         BLOCKED_MODULES+=("dvb_core")
         echo -n "Excluding and unloading any competing RTL-SDR drivers... "
+        UNLOAD_SUCCESS=true
         for module in "${BLOCKED_MODULES[@]}"
         do
-            if ! grep -q $module /etc/modprobe.d/exclusions-rtl2832.conf
+            if ! grep -q "$module" /etc/modprobe.d/exclusions-rtl2832.conf
             then
               sudo -E "$(which bash)" -c "echo blacklist $module >>/etc/modprobe.d/exclusions-rtl2832.conf"
-              sudo -E "$(which bash)" -c "modprobe -r $module 2>/dev/null" || true
+              sudo -E "$(which bash)" -c "modprobe -r $module 2>/dev/null" || UNLOAD_SUCCESS=false
             fi
         done
         # Rebuild module dependency database factoring in blacklists
-        which depmod >/dev/null 2>&1 && depmod -a || true
+        which depmod >/dev/null 2>&1 && depmod -a || UNLOAD_SUCCESS=false
         # On systems with initramfs, this needs to be updated to make sure the exclusions take effect:
         which update-initramfs >/dev/null 2>&1 && sudo update-initramfs -u || true 
+
+        if [[ "${UNLOAD_SUCCESS}" == false ]]; then
+          echo "INFO: Although we've successfully excluded any competing RTL-SDR drivers, we weren't able to unload them. This will remedy itself when you reboot your system after the script finishes."
+        fi
     popd >/dev/null
     # Check tmpdir is set and not null before attempting to remove it
     if [[ -z "$tmpdir" ]]; then
