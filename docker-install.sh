@@ -52,10 +52,10 @@ if ! grep sudo /etc/group | grep -e ":${USER}$" >/dev/null 2>&1; then
   if [[ "${text,,}" != "n" ]]
   then
       echo
-      echo -n "Adding user \"${USER}\" to the \'sudo\' group... "
+      echo -n "Adding user \"${USER}\" to the 'sudo' group... "
       sudo usermod -aG sudo "${USER}"
       echo "done!"
-      echo -n "Ensuring that user \"${USER}\" can run \'sudo\' without entering a password... "
+      echo -n "Ensuring that user \"${USER}\" can run 'sudo' without entering a password... "
       echo "${USER} ALL=(ALL) NOPASSWD:ALL" | sudo tee /etc/sudoers.d/90-"${USER}"-privileges >/dev/null
       sudo chmod 0440 /etc/sudoers.d/90-"${USER}"-privileges
       echo "done!"
@@ -193,7 +193,7 @@ echo
 echo "Do you want to prepare the system for use with any of the RTL-SDR / ADS-B containers?"
 echo "Examples of these include the collection of containers maintained by @MikeNye,"
 echo "Tar1090, Readsb-ProtoBuf, Acarshub, PlaneFence, PiAware, RadarVirtuel, FR24, other feeders, etc."
-echo "It\'s safe to say YES to this question and continue, unless you are using a DVB-T stick to watch digital television."
+echo "It's safe to say YES to this question and continue, unless you are using a DVB-T stick to watch digital television."
 echo
 read -p "Please choose yes or no [Y/n] > " -n 1 text
 if [[ "${text,,}" != "n" ]]
@@ -266,9 +266,9 @@ then
 fi
 
 echo ""
-echo "We\'ve installed these packages, and we think they may be useful for you in the future. So we will leave them installed:"
+echo "We've installed these packages, and we think they may be useful for you in the future. So we will leave them installed:"
 echo "git, rtl-sdr"
-echo "If you don\'t want them, feel free to uninstall them using this command:"
+echo "If you don't want them, feel free to uninstall them using this command:"
 echo "sudo apt-get remove git rtl-sdr"
 echo ""
 echo "To make sure that everything works OK, you should reboot your machine."
