@@ -29,7 +29,7 @@ echo "If you haven't added your current login to the \"sudoer\" list,"
 echo "you may be asked for your password at various times during the installation."
 echo
 echo "This script strongly prefers a \"standard\" OS setup of Debian Buster or later, including variations like"
-echo "Raspberry Pi OS or Ubuntu. It uses \'apt-get\' and \'wget\' to get started, and assumes access to"
+echo "Raspberry Pi OS or Ubuntu. It uses 'apt-get' and 'wget' to get started, and assumes access to"
 echo "the standard package repositories".
 echo
 echo "If you have an old device usign Debian Stretch, we will try to install the software, but be WARNED that"
@@ -44,27 +44,31 @@ if [[ "$EUID" == 0 ]]; then
     exit 1
 fi
 
-echo "We'll start by adding your login name, \"${USER}\", to \"sudoers\". This will enable you to use \"sudo\" without having to type your password every time."
-echo "You may be asked to enter your password a few times below. We promise, this is the last time."
-echo
-read -p "Should we do this now? If you choose \"no\", you can always to it later by yourself [Y/n] > " -n 1 text
-if [[ "${text,,}" != "n" ]]
-then
-    echo
-    echo -n "Adding user \"${USER}\" to the \'sudo\' group... "
-    sudo usermod -aG sudo "${USER}"
-    echo "done!"
-    echo -n "Ensuring that user \"${USER}\" can run \'sudo\' without entering a password... "
-    echo "${USER} ALL=(ALL) NOPASSWD:ALL" | sudo tee /etc/sudoers.d/90-"${USER}"-privileges >/dev/null
-    sudo chmod 0440 /etc/sudoers.d/90-"${USER}"-privileges
-    echo "done!"
-    echo
-    echo "You should be ready to go now. If it continues to ask for a password below, do the following:"
-    echo "- press CTRL-c to stop the execution of this install script"
-    echo "- type \"exit\" to log out from your machine"
-    echo "- log in again"
-    echo "- re-run this script using the same command as you did before"
-    echo
+if ! grep sudo /etc/group | grep -e ":${USER}$" >/dev/null 2>&1; then
+  echo "We'll start by adding your login name, \"${USER}\", to \"sudoers\". This will enable you to use \"sudo\" without having to type your password every time."
+  echo "You may be asked to enter your password a few times below. We promise, this is the last time."
+  echo
+  read -p "Should we do this now? If you choose \"no\", you can always to it later by yourself [Y/n] > " -n 1 text
+  if [[ "${text,,}" != "n" ]]
+  then
+      echo
+      echo -n "Adding user \"${USER}\" to the \'sudo\' group... "
+      sudo usermod -aG sudo "${USER}"
+      echo "done!"
+      echo -n "Ensuring that user \"${USER}\" can run \'sudo\' without entering a password... "
+      echo "${USER} ALL=(ALL) NOPASSWD:ALL" | sudo tee /etc/sudoers.d/90-"${USER}"-privileges >/dev/null
+      sudo chmod 0440 /etc/sudoers.d/90-"${USER}"-privileges
+      echo "done!"
+      echo
+      echo "You should be ready to go now. If it continues to ask for a password below, do the following:"
+      echo "- press CTRL-c to stop the execution of this install script"
+      echo "- type \"exit\" to log out from your machine"
+      echo "- log in again"
+      echo "- re-run this script using the same command as you did before"
+      echo
+  fi
+else
+  echo "Your account, \"${USER}\", is already part of the \"sudo\" group. Great!"
 fi
 
 echo "We will now continue and install Docker."
@@ -97,9 +101,12 @@ else
 }
 EOF
     sudo chmod u=rw,go=r /etc/docker/daemon.json
-    echo 'export PATH=/usr/bin:$PATH' >> ~/.bashrc
-    export PATH=/usr/bin:$PATH
-
+    if ! grep -e "/usr/bin:" -e "/usr/bin$" <<< "$PATH" >/dev/null 2>&1; then
+      #shellcheck disable=SC2016
+      echo 'export PATH=/usr/bin:$PATH' >> ~/.bashrc
+      export PATH=/usr/bin:$PATH
+    fi
+    
     sudo service docker restart
     echo "Now let's run a test container:"
     if sudo docker run --rm hello-world
