@@ -66,7 +66,8 @@ services:
       #
       # --------------------------------------------------
       # Sources and Aggregator connections:
-      # (Note - remove the ones you are not using / feeding)
+      # Notes - remove the entries you are not using / feeding
+      #       - !!! make sure that each line ends with a semicolon ";",  with the exception of the last line which shouldn't have a ";" !!!
       - ULTRAFEEDER_CONFIG=
           adsb,dump978,30978,uat_in;
           adsb,feed.adsb.fi,30004,beast_reduce_plus_out;
