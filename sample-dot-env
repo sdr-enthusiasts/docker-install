@@ -1,15 +1,21 @@
 # Config parameters for ASDB Docker Containers:
 # Station characteristics:
-FEEDER_ALT_FT=xx
-FEEDER_ALT_M=xx
-FEEDER_LAT=xx.xxxxx
-FEEDER_LONG=xx.xxxxx
-FEEDER_TZ=America/New_York
-HEYWHATSTHAT=XXXXXXX
+FEEDER_ALT_FT=<your antenna's altitude in feet>
+FEEDER_ALT_M=<your antenna's altitude in metres>
+FEEDER_LAT=<your latitude>
+FEEDER_LONG=<your longitude>
+FEEDER_TZ=<your timezone>
+FEEDER_NAME=<your location name>
+FEEDER_TZ=<America/New_York>
+FEEDER_HEYWHATSTHAT_ID=<your heywhatsthat ID from the step above>
+FEEDER_HEYWHATSTHAT_ALTS=<desired theoretical range altitudes>
+#
+# SDR parameters:
+ADSB_SDR_SERIAL=<your SDR serial>
+ADSB_SDR_GAIN=<your desired gain, or autogain>
+ADSB_SDR_PPM=<your PPM from the step above>
 #
 # Feeder parameters:
-# ADSBX_UUID=exxxxxx-xxxa-xxxx-xxxx-xxxxxxxxxxxx2
-# ADSBX_SITENAME=xxxx-0
 PIAWARE_FEEDER_ID=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
 FR24_SHARING_KEY=xxxxxxxxxxxxxxx
 FR24_RADAR_ID=T-xxxxxx
@@ -19,11 +25,11 @@ PLANEFINDER_SHARECODE=xxxxxxxxxxxxx
 PLANEWATCH_KEY=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
 RV_KEY="xxxx:xxxxxxxxxxxxxxxxxxxxx"
 MLAT_SITE_NAME=my_site_name
+ULTRAFEEDER_UUID=<your UUID from the step above>
 #
 # VRS parameters:
 VRS_ADMIN_USERNAME=admin
 VRS_ADMIN_PASSWORD=my_password!234
-
 #
 # ACARS/VDML related parameters:
 ADSB_SDR_SERIAL="sdr-serial-number"
