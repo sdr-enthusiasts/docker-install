@@ -28,8 +28,8 @@ echo "Note - this scripts makes use of \"sudo\" to install Docker."
 echo "If you haven't added your current login to the \"sudoer\" list,"
 echo "you may be asked for your password at various times during the installation."
 echo
-echo "This script strongly prefers a \"standard\" OS setup of Debian Buster or later, including variations like"
-echo "Raspberry Pi OS or Ubuntu. It uses 'apt-get' and 'wget' to get started, and assumes access to"
+echo "This script strongly prefers a \"standard\" OS setup of Debian Buster/Bullseye/Bookworm, including variations like"
+echo "Raspberry Pi OS, DietPi, or Ubuntu. It uses 'apt-get' and 'wget' to get started, and assumes access to"
 echo "the standard package repositories".
 echo
 echo "If you have an old device usign Debian Stretch, we will try to install the software, but be WARNED that"
@@ -82,7 +82,18 @@ else
     echo -n "Updating repositories... "
     sudo apt-get update -qq -y >/dev/null && sudo apt-get upgrade -q -y
     echo -n "Ensuring dependencies are installed... "
-    sudo apt-get install -qq -y apt-transport-https ca-certificates curl gnupg2 slirp4netns software-properties-common uidmap w3m jq netcat >/dev/null
+    deps=()
+         deps+=(apt-transport-https)
+         deps+=(ca-certificates)
+         deps+=(curl)
+         deps+=(gnupg2)
+         deps+=(slirp4netns)
+         deps+=(software-properties-common)
+         deps+=(uidmap)
+         deps+=(w3m)
+         deps+=(jq)
+         if ! grep "bookworm" /etc/os-release >/dev/null 2>&1; then deps+=(netcat); else deps+=(netcat-openbsd); fi
+    sudo apt-get install -qq -y ${deps[@]} >/dev/null
     echo -n "Getting docker..."
     curl -fsSL https://get.docker.com -o get-docker.sh
     echo "Installing Docker... "
