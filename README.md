@@ -7,7 +7,7 @@ Script to help install Docker on Raspberry Pi and similar Debian-based OSes
 ## What is it?
 
 The [docker-install.sh](docker-install.sh) script helps users get ready to use the SDR-Enthusiasts' (@mikenye/@fredclausen/@k1xt) Docker containers.
-The script is written to be used on a Debian (Ubuntu or Raspberry Pi OS) system that is "barebones", i.e., where Docker has not yet been installed. Debian OS versions Stretch, Buster, and Bullseye are supported.
+The script is written to be used on a Debian (Ubuntu, DietPi, or Raspberry Pi OS) system that is "barebones", i.e., where Docker has not yet been installed. Debian OS versions Stretch, Buster, Bullseye, and Bookworm are supported.
 
 It will **check**, and if necessary **install** the following components and settings:
 
