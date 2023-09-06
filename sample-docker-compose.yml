@@ -339,7 +339,7 @@ services:
  
   planefence:
 # Note - after initial startup, please edit /opt/adsb/planefence/config/planefence.config. Then restart this container.
-    image: kx1t/planefence:dev
+    image: ghcr.io/sdr-enthusiasts/docker-planefence
 #    profiles:
 #      - donotstart
     tty: true
