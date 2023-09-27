@@ -244,6 +244,7 @@ then
             if ! grep -q "$module" /etc/modprobe.d/exclusions-rtl2832.conf
             then
               sudo -E "$(which bash)" -c "echo blacklist $module >>/etc/modprobe.d/exclusions-rtl2832.conf"
+              sudo -E "$(which bash)" -c "echo install $module /bin/false >>/etc/modprobe.d/exclusions-rtl2832.conf"
               sudo -E "$(which bash)" -c "modprobe -r $module 2>/dev/null" || UNLOAD_SUCCESS=false
             fi
         done
