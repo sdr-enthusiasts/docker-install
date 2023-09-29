@@ -44,6 +44,26 @@ if [[ "$EUID" == 0 ]]; then
     exit 1
 fi
 
+deps=()
+deps+=(apt-transport-https)
+deps+=(ca-certificates)
+deps+=(curl)
+deps+=(gnupg2)
+deps+=(slirp4netns)
+deps+=(software-properties-common)
+deps+=(uidmap)
+deps+=(w3m)
+deps+=(jq)
+deps+=(git)
+deps+=(rtl-sdr)
+if grep "Raspberry Pi 4" /sys/firmware/devicetree/base/model >/dev/null 2>&1; then deps+=(uhubctl); fi
+if ! grep "bookworm" /etc/os-release >/dev/null 2>&1; then deps+=(netcat); else deps+=(netcat-openbsd); fi
+
+echo -n "First we will update your system and install some dependencies ... "
+sudo apt-get update -q -y >/dev/null
+sudo apt-get upgrade -q -y
+sudo apt-get install -q -y ${deps[@]} >/dev/null
+
 if ! grep sudo /etc/group | grep -e ":${USER}$" >/dev/null 2>&1; then
   echo "We'll start by adding your login name, \"${USER}\", to \"sudoers\". This will enable you to use \"sudo\" without having to type your password every time."
   echo "You may be asked to enter your password a few times below. We promise, this is the last time."
@@ -59,8 +79,7 @@ if ! grep sudo /etc/group | grep -e ":${USER}$" >/dev/null 2>&1; then
       echo "${USER} ALL=(ALL) NOPASSWD:ALL" | sudo tee /etc/sudoers.d/90-"${USER}"-privileges >/dev/null
       sudo chmod 0440 /etc/sudoers.d/90-"${USER}"-privileges
       echo "done!"
-      echo
-      echo "You should be ready to go now. If it continues to ask for a password below, do the following:"
+      echo "If it continues to ask for a password below, do the following:"
       echo "- press CTRL-c to stop the execution of this install script"
       echo "- type \"exit\" to log out from your machine"
       echo "- log in again"
@@ -79,21 +98,6 @@ then
 else
     echo "not found!"
     echo "Installing docker, each step may take a while:"
-    echo -n "Updating repositories... "
-    sudo apt-get update -qq -y >/dev/null && sudo apt-get upgrade -q -y
-    echo -n "Ensuring dependencies are installed... "
-    deps=()
-         deps+=(apt-transport-https)
-         deps+=(ca-certificates)
-         deps+=(curl)
-         deps+=(gnupg2)
-         deps+=(slirp4netns)
-         deps+=(software-properties-common)
-         deps+=(uidmap)
-         deps+=(w3m)
-         deps+=(jq)
-         if ! grep "bookworm" /etc/os-release >/dev/null 2>&1; then deps+=(netcat); else deps+=(netcat-openbsd); fi
-    sudo apt-get install -qq -y ${deps[@]} >/dev/null
     echo -n "Getting docker..."
     curl -fsSL https://get.docker.com -o get-docker.sh
     echo "Installing Docker... "
@@ -218,7 +222,7 @@ then
     tmpdir=$(mktemp -d)
     pushd "$tmpdir" >/dev/null || exit
         echo -n "Getting the latest RTL-SDR packages... "
-        sudo apt-get install -qq -y git rtl-sdr >/dev/null
+        sudo apt-get install -qq -y git rtl-sdr uhubctl >/dev/null
         echo -n "Getting the latest UDEV rules... "
         # First install the UDEV rules for RTL-SDR dongles
         sudo -E "$(which bash)" -c "curl -sL -o /etc/udev/rules.d/rtl-sdr.rules https://raw.githubusercontent.com/wiedehopf/adsb-scripts/master/osmocom-rtl-sdr.rules"
@@ -282,7 +286,20 @@ then
   sudo sed -i 's/^\(127.0.0.1\s*localhost\)\(.*\)/\1\2 localunixsocket localunixsocket.local localunixsocket.home/g' /etc/hosts
 fi
 
-echo ""
+echo "Adding some handy aliases to your bash shell. You can find them by typing \"cat ~/.bash_aliases\""
+curl -sSL "https://raw.githubusercontent.com/sdr-enthusiasts/docker-install/main/bash_aliases">> ~/.bash_aliases
+echo "source ~/.bash_aliases" >> ~/.bashrc
+source ~/.bash_aliases
+
+echo "Adding a crontab entry to ensure your system stays clean"
+file="$(mktemp)"
+crontab -l > "$file"
+echo '0 3 * * * /usr/bin/docker system prune -af >/dev/null 2>&1' >> "$file"
+cat "$file" | crontab -
+rm -f "$file"
+
+echo "--------------------------------"
+echo "We're done! Here are some final messages, read them carefully:"
 echo "We've installed these packages, and we think they may be useful for you in the future. So we will leave them installed:"
 echo "git, rtl-sdr"
 echo "If you don't want them, feel free to uninstall them using this command:"
