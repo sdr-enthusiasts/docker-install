@@ -157,14 +157,11 @@ then
     source ~/.bash_aliases
 else
     echo "not found!"
-    echo "Installing Docker-compose... "
+    echo "Installing Docker compose... "
     sudo apt install -y docker-compose-plugin
-    echo "alias docker-compose=\"docker compose\"" >> ~/.bash_aliases
-    source ~/.bash_aliases
-
-    if docker-compose version
+    if docker compose version
     then
-      echo "Docker-compose was installed successfully. You can use either \"docker compose\" or \"docker-compose\", they are aliases of each other"
+      echo "Docker compose was installed successfully. You can use either \"docker compose\" or \"docker-compose\", they are aliases of each other"
     else
       echo "Docker-compose was not installed correctly - you may need to do this manually."
     fi
@@ -221,8 +218,6 @@ then
     echo
     tmpdir=$(mktemp -d)
     pushd "$tmpdir" >/dev/null || exit
-        echo -n "Getting the latest RTL-SDR packages... "
-        sudo apt-get install -qq -y git rtl-sdr uhubctl >/dev/null
         echo -n "Getting the latest UDEV rules... "
         # First install the UDEV rules for RTL-SDR dongles
         sudo -E "$(which bash)" -c "curl -sL -o /etc/udev/rules.d/rtl-sdr.rules https://raw.githubusercontent.com/wiedehopf/adsb-scripts/master/osmocom-rtl-sdr.rules"
@@ -287,7 +282,7 @@ then
 fi
 
 echo "Adding some handy aliases to your bash shell. You can find them by typing \"cat ~/.bash_aliases\""
-curl -sSL "https://raw.githubusercontent.com/sdr-enthusiasts/docker-install/main/bash_aliases">> ~/.bash_aliases
+curl -sSL "https://raw.githubusercontent.com/sdr-enthusiasts/docker-install/main/bash_aliases" >> ~/.bash_aliases
 echo "source ~/.bash_aliases" >> ~/.bashrc
 source ~/.bash_aliases
 
