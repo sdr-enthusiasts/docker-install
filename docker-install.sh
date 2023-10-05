@@ -123,7 +123,7 @@ EOF
       export PATH=/usr/bin:$PATH
     fi
     
-    sudo service docker restart
+    sudo systemctl restart docker.service docker.socket 
     echo "Now let's run a test container:"
     if sudo docker run --rm hello-world
     then
