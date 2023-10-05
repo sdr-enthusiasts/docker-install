@@ -208,9 +208,9 @@ fi
 
 echo
 echo "Do you want to prepare the system for use with any of the RTL-SDR / ADS-B containers?"
-echo "Examples of these include the collection of containers maintained by @MikeNye,"
-echo "Tar1090, Readsb-ProtoBuf, Acarshub, PlaneFence, PiAware, RadarVirtuel, FR24, other feeders, etc."
-echo "It's safe to say YES to this question and continue, unless you are using a DVB-T stick to watch digital television."
+echo "Examples of these include the collection of containers maintained by SDR-Enthusiasts group:"
+echo "Ultrafeeder, Tar1090, Readsb-ProtoBuf, Acarshub, PlaneFence, PiAware, RadarVirtuel, FR24, other feeders, etc."
+echo "It's safe to say YES to this question and continue unless you are using a DVB-T stick to watch digital television."
 echo
 read -p "Please choose yes or no [Y/n] > " -n 1 text
 if [[ "${text,,}" != "n" ]]
@@ -306,7 +306,7 @@ echo "WARNING - if you are connected remotely to a Raspberry Pi (via SSH or VNC)
 echo "make sure you unplug any externally powered USB devices or hubs before rebooting"
 echo "because these may cause your Raspberry Pi to get stuck in the \"off\" state!"
 echo ""
-echo "Once rebooted, you are ready to go! For safety reasons we won't do the reboot for you, but you can do it manually by typing:"
+echo "Once rebooted, you are ready to go! For safety reasons, we won't do the reboot for you, but you can do it manually by typing:"
 echo ""
 echo "sudo reboot"
 echo ""
