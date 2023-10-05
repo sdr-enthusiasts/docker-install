@@ -56,6 +56,7 @@ deps+=(w3m)
 deps+=(jq)
 deps+=(git)
 deps+=(rtl-sdr)
+deps+=(chrony)
 if grep "Raspberry Pi 4" /sys/firmware/devicetree/base/model >/dev/null 2>&1; then deps+=(uhubctl); fi
 if ! grep "bookworm" /etc/os-release >/dev/null 2>&1; then deps+=(netcat); else deps+=(netcat-openbsd); fi
 
