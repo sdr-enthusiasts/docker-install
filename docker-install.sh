@@ -44,6 +44,10 @@ if [[ "$EUID" == 0 ]]; then
     exit 1
 fi
 
+echo "This script was last updated on $(curl -sSL -X GET -H "Cache-Control: no-cache" https://api.github.com/repos/sdr-enthusiasts/docker-install/commits??path=docker-install.sh | jq -r '.[0].commit.committer.date')"
+echo ""
+read -p "Press ENTER to continue."
+
 deps=()
 deps+=(apt-transport-https)
 deps+=(ca-certificates)
