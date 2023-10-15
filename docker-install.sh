@@ -49,7 +49,7 @@ if [[ "$EUID" == 0 ]]; then
     exit 1
 fi
 
-if lsb_release -c | grep -q 'stretch'; then
+if grep "stretch" /etc/os-release >/dev/null 2>&1; then
    echo
    echo "WARNING: This device appears to be running Debian 9 (\"Stretch\"), which passed End of Life (EOL) in June 2022."
    echo "If you encounter issues, consider upgrading to Debian 11 (\"Bullseye\") or 12 (\"Bookworm\")."
