@@ -3,10 +3,11 @@
 # DOCKER-INSTALL.SH -- Installation script for the Docker infrastructure on a Raspbian or Ubuntu system
 # Usage: source <(curl -s https://raw.githubusercontent.com/sdr-enthusiasts/docker-install/main/docker-install.sh)
 #
-# Copyright 2021-2023 Ramon F. Kolb (kx1t)- licensed under the terms and conditions
-# of the MIT license. The terms and conditions of this license are included with the Github
-# distribution of this package.
-
+# Copyright 2021-2023 Ramon F. Kolb (kx1t)
+# Minor amendments 2024 by Adam James (mrwizrd)
+#
+# Licensed under the terms and conditions of the MIT license.
+# https://github.com/sdr-enthusiasts/docker-install/main/LICENSE
 
 clear
 cat << "EOM"
@@ -24,28 +25,39 @@ echo "Welcome to the Docker Infrastructure installation script"
 echo "We will help you install Docker and Docker-compose."
 echo "and then help you with your configuration."
 echo
-echo "Note - this scripts makes use of \"sudo\" to install Docker."
+
+if which jq >/dev/null 2>&1
+then
+    echo "The script was last updated on $(curl -sSL -X GET -H "Cache-Control: no-cache" https://api.github.com/repos/sdr-enthusiasts/docker-install/commits??path=docker-install.sh | jq -r '.[0].commit.committer.date')"
+    echo 
+fi
+
+echo "Note - this script makes use of \"sudo\" to install Docker."
 echo "If you haven't added your current login to the \"sudoer\" list,"
 echo "you may be asked for your password at various times during the installation."
 echo
 echo "This script strongly prefers a \"standard\" OS setup of Debian Buster/Bullseye/Bookworm, including variations like"
 echo "Raspberry Pi OS, DietPi, or Ubuntu. It uses 'apt-get' and 'wget' to get started, and assumes access to"
 echo "the standard package repositories".
-echo
-echo "If you have an old device usign Debian Stretch, we will try to install the software, but be WARNED that"
-echo "Docker for Stretch is deprecated and is no longer actively supported by the Docker community."
-echo
 
 if [[ "$EUID" == 0 ]]; then
+    echo
     echo "STOP -- you are running this as an account with superuser privileges (ie: root), but should not be. It is best practice to NOT install Docker services as \"root\"."
     echo "Instead please log out from this account, log in as a different non-superuser account, and rerun this script."
     echo "If you are unsure of how to create a new user, you can learn how here: https://linuxize.com/post/how-to-create-a-sudo-user-on-debian/"
-    echo ""
+    echo
     exit 1
 fi
 
-echo "This script was last updated on $(curl -sSL -X GET -H "Cache-Control: no-cache" https://api.github.com/repos/sdr-enthusiasts/docker-install/commits??path=docker-install.sh | jq -r '.[0].commit.committer.date')"
-echo ""
+if lsb_release -c | grep -q 'stretch'; then
+   echo
+   echo "WARNING: This device appears to be running Debian 9 (\"Stretch\"), which passed End of Life (EOL) in June 2022."
+   echo "If you encounter issues, consider upgrading to Debian 11 (\"Bullseye\") or 12 (\"Bookworm\")."
+   echo
+   echo "We can try to install Docker anyway, but Stretch is no longer actively supported by the community."
+   echo
+fi
+
 read -p "Press ENTER to start."
 
 deps=()
