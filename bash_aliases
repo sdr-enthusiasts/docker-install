@@ -44,6 +44,9 @@ function dip() {
         veth="$(grep '^'"$(docker exec -it $c cat /sys/class/net/eth0/iflink | tr -d '\r')"'$' /sys/class/net/veth*/ifindex | awk -F'/' '{print $5}')"
                 name="$(docker inspect --format '{{ .Name}}' $c)"
                 ipaddress="$(docker inspect $c |sed -n 's|\s*"IPAddress": "\([0-9]\+\.[0-9]\+\.[0-9]\+\.[0-9]\+\).*|\1|p' | tail -1)"
-        echo "${name//\//} ${ipaddress:-no_ipadress_found} ${veth:-no_interface_found}"
+        if [[ -z "$1" ]] || [[ "${name//\//}" == "$1" ]]; then
+                echo "${name//\//} ${ipaddress:-no_ipadress_found} ${veth:-no_interface_found}"
+                if [[ -n "$1" ]]; then break; fi
+        fi
     done
 }
