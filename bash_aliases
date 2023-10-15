@@ -43,7 +43,7 @@ function dip() {
     for c in ${containers[@]}; do
         veth="$(grep '^'"$(docker exec -it $c cat /sys/class/net/eth0/iflink | tr -d '\r')"'$' /sys/class/net/veth*/ifindex | awk -F'/' '{print $5}')"
                 name="$(docker inspect --format '{{ .Name}}' $c)"
-                ipaddress="$(grep -v "no value" <<< "$(docker inspect --format '{{ .NetworkSettings.Networks.'"$(docker inspect --format '{{ .HostConfig.NetworkMode }}' $c)"'.IPAddress }}' $c 2>/dev/null | sed 's/ \// /')")"
+                ipaddress="$(docker inspect $c |sed -n 's|\s*"IPAddress": "\([0-9]\+\.[0-9]\+\.[0-9]\+\.[0-9]\+\).*|\1|p' | tail -1)"
         echo "${name//\//} ${ipaddress:-no_ipadress_found} ${veth:-no_interface_found}"
     done
-} 
+}
