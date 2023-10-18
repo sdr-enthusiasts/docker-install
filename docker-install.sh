@@ -4,7 +4,6 @@
 # Usage: source <(curl -s https://raw.githubusercontent.com/sdr-enthusiasts/docker-install/main/docker-install.sh)
 #
 # Copyright 2021-2023 Ramon F. Kolb (kx1t)
-# Minor amendments 2024 by Adam James (mrwizrd)
 #
 # Licensed under the terms and conditions of the MIT license.
 # https://github.com/sdr-enthusiasts/docker-install/main/LICENSE
