@@ -14,14 +14,14 @@ export DOCKER_HOST="unix:///var/run/docker.sock"
 
 function dexec () {
 	# shortcut for "docker exec it container bash ..."
-	[[ -n "$1" ]] && { echo "Usage: dexec <containername> [commands]"; return 99; }
+	[[ -z "$1" ]] && { echo "Usage: dexec <containername> [commands]"; return 99; } || true
 	docker ps | grep "Up" >/dev/null 2>&1 || { echo "No containers are running."; return 1; }
         docker exec -it $1 bash ${@:2}
 }
 
 function dhealth () {
 	# shows the HealthCheck status for a container
-	[[ -n "$1" ]] && { echo "Usage: dhealth <container_name>"; return 99; }
+	[[ -z "$1" ]] && { echo "Usage: dhealth <container_name>"; return 99; } || true
 	docker ps | grep "Up" >/dev/null 2>&1 || { echo "No containers are running."; return 1; }
         docker inspect --format "{{json .State.Health }}" $1 | jq '.Log[].Output'
 }
