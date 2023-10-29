@@ -284,7 +284,7 @@ services:
     restart: always
     environment:
       - FEEDER_KEY=${RV_KEY}
-      - SOURCE_HOST=tar1090:30002
+      - SOURCE_HOST=ultrafeeder:30002
       - RV_SERVER=mg22.adsbnetwork.com:50050
       - LAT=${FEEDER_LAT}
       - LON=${FEEDER_LONG}
