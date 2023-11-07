@@ -325,7 +325,7 @@ source ~/.bash_aliases
 echo "Adding a crontab entry to ensure your system stays clean"
 file="$(mktemp)"
 crontab -l > "$file"
-echo '0 3 * * * /usr/bin/docker system prune -af >/dev/null 2>&1' >> "$file"
+echo '0 3 * * * /usr/bin/docker system prune -af --filter "label!=do_not_prune" >/dev/null 2>&1' >> "$file"
 crontab - < "$file"
 rm -f "$file"
 
