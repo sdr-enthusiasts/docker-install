@@ -1,13 +1,17 @@
-<img align="right" src="https://raw.githubusercontent.com/sdr-enthusiasts/sdr-enthusiast-assets/main/SDR%20Enthusiasts.svg" height="300">
-
 # docker-install
 
-Script to help install Docker on Raspberry Pi and similar Debian-based OSes
+<img align="right" src="https://raw.githubusercontent.com/sdr-enthusiasts/sdr-enthusiast-assets/main/SDR%20Enthusiasts.svg" height="300">
+
+Script to help install Docker on Raspberry Pi and devices with similar Debian-based OSes
 
 ## What is it?
 
-The [docker-install.sh](docker-install.sh) script helps users get ready to use the SDR-Enthusiasts' (@mikenye/@fredclausen/@k1xt) Docker containers.
-The script is written to be used on a Debian (Ubuntu, DietPi, or Raspberry Pi OS) system that is "barebones", i.e., where Docker has not yet been installed. Debian OS versions Stretch, Buster, Bullseye, and Bookworm are supported.
+The [docker-install.sh](docker-install.sh) script helps users get ready to use the [SDR-Enthusiasts](https://github.com/sdr-enthusiasts)' (@mikenye/@fredclausen/@k1xt) Docker containers.
+The script is written to be used on a Debian (Ubuntu, DietPi, or Raspberry Pi OS) system that is "barebones", i.e., where Docker has not yet been installed. Debian OS versions Buster (Debian 10), Bullseye (Debian 11), and Bookworm (Debian 12) are supported. Debian OS Stretch (Debian 9) is no longer officially supported. The script should install successfully, but we are not providing any support for issues that occur on Debian Stretch.
+
+Note that this script will work across a number of Debian-based Linux Operating Systems, but the SDR-Enthusiast container only work on these hardware architectures: `armhf` (32-bit ARM CPUs with hardware floating point processor), `arm64` (64-bit ARM CPUs with hardware floating point processor), and `amd64` (64-bit Intel CPUs).
+
+We don't have sdr-enthusiasts containers available for any other architectures, including but not limited to `armel` (32-bit ARM CPUs with software floating point solution - some of the older Pi-Zero/Pi-1/Pi2 devices), `i386` (32 bits Intel CPUs), and `darwin` (MacOS devices).
 
 It will **check**, and if necessary **install** the following components and settings:
 
@@ -19,7 +23,8 @@ It will **check**, and if necessary **install** the following components and set
   - add current user to `docker` group
 - `docker-compose`
   - Install latest stable `docker-compose` from Github (and not the older version from the Debian Repo)
-- Make sure that `libseccomp2` is of a new enough version to support Bullseye-based Docker containers
+- It will install a number of "helper" apps that are needed or recommended to use with the SDR-Enthusiasts containers
+- On Stretch/Buster/Bullseye OS versions, it will make sure that `libseccomp2` is of a new enough version to support Bullseye-based Docker containers
 - Update `udev` rules for use with RTL-SDR dongles
 - Exclude and uninstall SDR drivers so the `SDR-Enthusiasts`' ADSB and ACARS containers can access the RTL-SDR dongles. Unload any preloaded drivers.
 - on `dhcpd` based systems, exclude Docker Container-based virtual ethernet interfaces from using DHCP
@@ -53,13 +58,16 @@ The sample configuration assumes that the `docker-compose.yml` file will be loca
 ## Errors and how to deal with them
 
 - ISSUE: The script fails with the message below:
-```
+
+```text
 E: Repository 'http://raspbian.raspberrypi.org/raspbian buster InRelease' changed its 'Suite' value from 'stable' to 'oldstable'
 E: Repository 'http://archive.raspberrypi.org/debian buster InRelease' changed its 'Suite' value from 'testing' to 'oldstable'
 ```
+
 - SOLUTION: First run `sudo apt-get update --allow-releaseinfo-change && sudo apt-get upgrade -y` and then run the install script again.
 - ISSUE: The "Hello World" docker test fails when executing the script.
 - SOLUTION: Ignore this for now -- it will probably work once the system has been rebooted after completing the installation
 
 ## License
+
 This software is licensed under the MIT License. The terms and conditions thereof can be found [here](LICENSE).

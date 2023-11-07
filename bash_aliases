@@ -2,7 +2,7 @@ alias ddown='docker compose down'
 alias dir='ls -alsvh --color=auto'
 alias dlogs='docker logs -n 100 -f'
 alias docker-compose='docker compose'
-alias dup='docker compose pull && docker compose up -d --remove-orphans && docker system prune -af'
+alias dup='docker compose pull && docker compose up -d --remove-orphans && docker system prune -af --filter "label!=do_not_prune"'
 alias nano='nano -l'
 alias tb='nc termbin.com 9999'
 alias usboff='grep "Raspberry Pi 4" /sys/firmware/devicetree/base/model >/dev/null 2>&1 && sudo uhubctl -a off -l 1-1 || echo "Sorry, this is only available on Raspberry Pi 4"'
@@ -28,12 +28,12 @@ function dhealth () {
 
 function rtl_eeprom () {
         # this function is dockerized because the default Debian distro of rtl_sdr doesn't support some of the modern SDRs, e.g. RTLSDRv4
-	docker run  --rm -it --device=/dev/bus/usb ghcr.io/sdr-enthusiasts/docker-baseimage:rtlsdr rtl_eeprom $@ |grep -v s6-rc
+	docker run --label do_not_prune -it --device=/dev/bus/usb ghcr.io/sdr-enthusiasts/docker-baseimage:rtlsdr rtl_eeprom $@ |grep -v s6-rc
 }
 
 function rtl_test () {
         # this function is dockerized because the default Debian distro of rtl_sdr doesn't support some of the modern SDRs, e.g. RTLSDRv4
-	docker run  --rm -it --device=/dev/bus/usb ghcr.io/sdr-enthusiasts/docker-baseimage:rtlsdr rtl_test $@ |grep -v s6-rc
+	docker run --label do_not_prune -it --device=/dev/bus/usb ghcr.io/sdr-enthusiasts/docker-baseimage:rtlsdr rtl_test $@ |grep -v s6-rc
 }
 
 function dip() {

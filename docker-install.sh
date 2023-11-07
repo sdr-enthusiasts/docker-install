@@ -1,5 +1,5 @@
 #!/bin/bash
-#shellcheck shell=bash external-sources=false disable=SC1090,SC2164
+#shellcheck shell=bash external-sources=false disable=SC1090,SC2015,SC2164
 # DOCKER-INSTALL.SH -- Installation script for the Docker infrastructure on a Raspbian or Ubuntu system
 # Usage: source <(curl -s https://raw.githubusercontent.com/sdr-enthusiasts/docker-install/main/docker-install.sh)
 #
@@ -7,6 +7,27 @@
 #
 # Licensed under the terms and conditions of the MIT license.
 # https://github.com/sdr-enthusiasts/docker-install/main/LICENSE
+
+# These are the supported architectures for SDR-enthusiasts docker containers
+# We will warn if the system reports a different architecture
+SUPPORTED_ARCH=(armhf)
+SUPPORTED_ARCH+=(arm64)
+SUPPORTED_ARCH+=(amd64)
+
+# This is the list of applications that we want to have installed to ensure good working
+# of the containerized SDR environment:
+deps=(apt-transport-https)
+deps+=(ca-certificates)
+deps+=(curl)
+deps+=(gnupg2)
+deps+=(slirp4netns)
+deps+=(software-properties-common)
+deps+=(uidmap)
+deps+=(w3m)
+deps+=(jq)
+deps+=(git)
+deps+=(rtl-sdr)
+deps+=(chrony)
 
 clear
 cat << "EOM"
@@ -50,41 +71,40 @@ fi
 
 if grep "stretch" /etc/os-release >/dev/null 2>&1; then
    echo
-   echo "WARNING: This device appears to be running Debian 9 (\"Stretch\"), which passed End of Life (EOL) in June 2022."
+   echo "WARNING: This device appears to be running Debian 9 (\"Stretch\"), which has been End of Life (EOL) since June 2022."
    echo "If you encounter issues, consider upgrading to Debian 11 (\"Bullseye\") or 12 (\"Bookworm\")."
    echo
    echo "We can try to install Docker anyway, but Stretch is no longer actively supported by the community."
    echo
 fi
 
-read -p "Press ENTER to start."
+# check if the current architecture is supported
+#shellcheck disable=SC2076
+if [[ ! " ${SUPPORTED_ARCH[*]} " =~ " $(dpkg --print-architecture 2>/dev/null || echo false) " ]]; then
+  echo
+  echo "WARNING: Your system reports \"$(dpkg --print-architecture 2>/dev/null || true)\" as architecture."
+  echo "         This is not supported by most of the SDR-Enthusiasts SDR-related containers."
+  echo "         These only support the following architectures: ${SUPPORTED_ARCH[*]}."
+  echo "         You can continue to use this script, but please note that you can't use this system with any of the SDR-Enthusiasts containers."
+  echo
+  echo -n "Press CTRL-C to abort. "
+fi
 
-deps=()
-deps+=(apt-transport-https)
-deps+=(ca-certificates)
-deps+=(curl)
-deps+=(gnupg2)
-deps+=(slirp4netns)
-deps+=(software-properties-common)
-deps+=(uidmap)
-deps+=(w3m)
-deps+=(jq)
-deps+=(git)
-deps+=(rtl-sdr)
-deps+=(chrony)
+read -r -p "Press ENTER to start."
+
 if grep "Raspberry Pi 4" /sys/firmware/devicetree/base/model >/dev/null 2>&1; then deps+=(uhubctl); fi
 if ! grep "bookworm" /etc/os-release >/dev/null 2>&1; then deps+=(netcat); else deps+=(netcat-openbsd); fi
 
 echo -n "First we will update your system and install some dependencies ... "
 sudo apt-get update -q -y >/dev/null
 sudo apt-get upgrade -q -y
-sudo apt-get install -q -y ${deps[@]} >/dev/null
+sudo apt-get install -q -y "${deps[@]}" >/dev/null
 
 if ! grep sudo /etc/group | grep -e ":${USER}$" >/dev/null 2>&1; then
   echo "We'll start by adding your login name, \"${USER}\", to \"sudoers\". This will enable you to use \"sudo\" without having to type your password every time."
   echo "You may be asked to enter your password a few times below. We promise, this is the last time."
   echo
-  read -p "Should we do this now? If you choose \"no\", you can always to it later by yourself [Y/n] > " -n 1 text
+  read -r -p "Should we do this now? If you choose \"no\", you can always to it later by yourself [Y/n] > " -n 1 text
   if [[ "${text,,}" != "n" ]]
   then
       echo
@@ -149,7 +169,7 @@ EOF
       echo "Note - in order to run your containers as user \"${USER}\" (and without \"sudo\"), you should"
       echo "log out and log back into your Raspberry Pi once the installation is all done."
       echo ""
-      read -p "Press ENTER to continue."
+      read -r -p "Press ENTER to continue."
     else
       echo ""
       echo "Something went wrong -- this will probably be fixed with a system reboot"
@@ -158,7 +178,7 @@ EOF
       echo ""
       echo "docker run --rm hello-world"
       echo ""
-      read -p "Press ENTER to continue."
+      read -r -p "Press ENTER to continue."
     fi
 fi
 
@@ -204,8 +224,8 @@ then
 elif (( LIBVERSION_MAJOR < 2 )) || (( LIBVERSION_MAJOR == 2 && LIBVERSION_MINOR < 4 )) && [[ "${OS_VERSION}" == "STRETCH" ]]
 then
   echo "libseccomp2 needs updating. Please wait while we do this."
-  INSTALL_CANDIDATE=$(curl -qsL http://ftp.debian.org/debian/pool/main/libs/libseccomp/ |w3m -T text/html -dump | sed -n 's/^.*\(libseccomp2_2.5.*armhf.deb\).*/\1/p' | sort | tail -1)
-  curl -qsL -o /tmp/"${INSTALL_CANDIDATE}" http://ftp.debian.org/debian/pool/main/libs/libseccomp/${INSTALL_CANDIDATE}
+  INSTALL_CANDIDATE="$(curl -qsL http://ftp.debian.org/debian/pool/main/libs/libseccomp/ | w3m -T text/html -dump | sed -n 's/^.*\(libseccomp2_2.5.*armhf.deb\).*/\1/p' | sort | tail -1)"
+  curl -qsL -o /tmp/"${INSTALL_CANDIDATE}" http://ftp.debian.org/debian/pool/main/libs/libseccomp/"${INSTALL_CANDIDATE}"
   sudo dpkg -i /tmp/"${INSTALL_CANDIDATE}" && rm -f /tmp/"${INSTALL_CANDIDATE}"
 else
   echo "Your system already has an acceptable version of libseccomp2. Doing some final checks on that now..."
@@ -219,7 +239,7 @@ then
 else
     echo "Something went wrong. Your system is using libseccomp2 v$(apt-cache policy libseccomp2|sed -n 's/\s*Installed:\s*\(.*\)/\1/p'), and it needs to be v2.4 or greater for the ADSB containers to work properly."
     echo "Please follow these instructions to fix this after this install script finishes: https://github.com/fredclausen/Buster-Docker-Fixes"
-    read -p "Press ENTER to continue."
+    read -r -p "Press ENTER to continue."
 fi
 
 echo
@@ -228,7 +248,7 @@ echo "Examples of these include the collection of containers maintained by SDR-E
 echo "Ultrafeeder, Tar1090, Readsb-ProtoBuf, Acarshub, PlaneFence, PiAware, RadarVirtuel, FR24, other feeders, etc."
 echo "It's safe to say YES to this question and continue unless you are using a DVB-T stick to watch digital television."
 echo
-read -p "Please choose yes or no [Y/n] > " -n 1 text
+read -r -p "Please choose yes or no [Y/n] > " -n 1 text
 if [[ "${text,,}" != "n" ]]
 then
     echo
@@ -306,7 +326,7 @@ echo "Adding a crontab entry to ensure your system stays clean"
 file="$(mktemp)"
 crontab -l > "$file"
 echo '0 3 * * * /usr/bin/docker system prune -af >/dev/null 2>&1' >> "$file"
-cat "$file" | crontab -
+crontab - < "$file"
 rm -f "$file"
 
 echo "--------------------------------"
