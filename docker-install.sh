@@ -1,5 +1,5 @@
 #!/bin/bash
-#shellcheck shell=bash external-sources=false disable=SC1090,SC2015,SC2164
+#shellcheck shell=bash external-sources=false disable=SC1090,SC2015,SC2164,SC2128,SC2076
 # DOCKER-INSTALL.SH -- Installation script for the Docker infrastructure on a Raspbian or Ubuntu system
 # Usage: source <(curl -s https://raw.githubusercontent.com/sdr-enthusiasts/docker-install/main/docker-install.sh)
 #
@@ -7,27 +7,54 @@
 #
 # Licensed under the terms and conditions of the MIT license.
 # https://github.com/sdr-enthusiasts/docker-install/main/LICENSE
-
+#
+# ------------------------------------------------------------------------------------------
+# VARIABLE DEFINITIONS:
 # These are the supported architectures for SDR-enthusiasts docker containers
 # We will warn if the system reports a different architecture
 SUPPORTED_ARCH=(armhf)
 SUPPORTED_ARCH+=(arm64)
+SUPPORTED_ARCH+=(aarch64)
 SUPPORTED_ARCH+=(amd64)
+SUPPORTED_ARCH+=(x86_64)
 
+#
 # This is the list of applications that we want to have installed to ensure good working
 # of the containerized SDR environment:
-deps=(apt-transport-https)
-deps+=(ca-certificates)
-deps+=(curl)
-deps+=(gnupg2)
-deps+=(slirp4netns)
-deps+=(software-properties-common)
-deps+=(uidmap)
-deps+=(w3m)
-deps+=(jq)
-deps+=(git)
-deps+=(rtl-sdr)
-deps+=(chrony)
+APT_INSTALLS=(apt-transport-https)
+APT_INSTALLS+=(ca-certificates)
+APT_INSTALLS+=(curl)
+APT_INSTALLS+=(gnupg2)
+APT_INSTALLS+=(slirp4netns)
+APT_INSTALLS+=(software-properties-common)
+APT_INSTALLS+=(uidmap)
+APT_INSTALLS+=(w3m)
+APT_INSTALLS+=(jq)
+APT_INSTALLS+=(git)
+APT_INSTALLS+=(rtl-sdr)
+APT_INSTALLS+=(chrony)
+if grep "Raspberry Pi 4" /sys/firmware/devicetree/base/model >/dev/null 2>&1; then APT_INSTALLS+=(uhubctl); fi
+if ! grep "bookworm" /etc/os-release >/dev/null 2>&1; then APT_INSTALLS+=(netcat); else APT_INSTALLS+=(netcat-openbsd); fi
+#
+# This is the list of SDR modules/drivers that need to get excluded 
+# Please keep the list in this order and add any additional ones to the BOTTOM
+BLOCKED_MODULES=("rtl2832_sdr")
+BLOCKED_MODULES+=("dvb_usb_rtl2832u")
+BLOCKED_MODULES+=("dvb_usb_rtl28xxu")
+BLOCKED_MODULES+=("dvb_usb_v2")
+BLOCKED_MODULES+=("r820t")
+BLOCKED_MODULES+=("rtl2830")
+BLOCKED_MODULES+=("rtl2832")
+BLOCKED_MODULES+=("rtl2838")
+BLOCKED_MODULES+=("dvb_core")
+#
+# Recommended Debian version:
+RECOMMENDED_DEBIAN=("12 (bookworm)")  # standard Debian version name. This is the one that will show as recommended
+RECOMMENDED_DEBIAN+=("22.04") # Ubuntu current LTS release
+RECOMMENDED_DEBIAN+=("23.04") # Ubuntu current normal release
+RECOMMENDED_DEBIAN+=("23.10") # Ubuntu current normal release
+#
+# ------------------------------------------------------------------------------------------
 
 clear
 cat << "EOM"
@@ -46,7 +73,7 @@ echo "We will help you install Docker and Docker-compose."
 echo "and then help you with your configuration."
 echo
 
-if which jq >/dev/null 2>&1
+if which jq >/dev/null 2>&1 && which curl >/dev/null 2>&1
 then
     echo "The script was last updated on $(curl -sSL -X GET -H "Cache-Control: no-cache" https://api.github.com/repos/sdr-enthusiasts/docker-install/commits??path=docker-install.sh | jq -r '.[0].commit.committer.date')"
     echo 
@@ -57,32 +84,63 @@ echo "If you haven't added your current login to the \"sudoer\" list,"
 echo "you may be asked for your password at various times during the installation."
 echo
 echo "This script strongly prefers a \"standard\" OS setup of Debian Buster/Bullseye/Bookworm, including variations like"
-echo "Raspberry Pi OS, DietPi, or Ubuntu. It uses 'apt-get' and 'wget' to get started, and assumes access to"
+echo "Raspberry Pi OS, DietPi, Armbian, or Ubuntu. It uses 'apt-get', 'dpkg', and 'wget' to get started, and assumes access to"
 echo "the standard package repositories".
+echo
+echo "If you are starting with a newly installed Linux build, we strongly suggest you to use the latest version of Debian (currently Debian 12 \"Bookworm\")."
 
 if [[ "$EUID" == 0 ]]; then
     echo
-    echo "STOP -- you are running this as an account with superuser privileges (ie: root), but should not be. It is best practice to NOT install Docker services as \"root\"."
+    echo "STOP -- you are running this script using an account with superuser privileges (i.e., $USER). It is best practice to NOT install Docker services as \"$USER\" user."
     echo "Instead please log out from this account, log in as a different non-superuser account, and rerun this script."
     echo "If you are unsure of how to create a new user, you can learn how here: https://linuxize.com/post/how-to-create-a-sudo-user-on-debian/"
     echo
     exit 1
 fi
 
-if grep "stretch" /etc/os-release >/dev/null 2>&1; then
-   echo
-   echo "WARNING: This device appears to be running Debian 9 (\"Stretch\"), which has been End of Life (EOL) since June 2022."
-   echo "If you encounter issues, consider upgrading to Debian 11 (\"Bullseye\") or 12 (\"Bookworm\")."
-   echo
-   echo "We can try to install Docker anyway, but Stretch is no longer actively supported by the community."
-   echo
+os_recommended=false
+if [[ -f /etc/os-release ]]; then 
+  for os in "${RECOMMENDED_DEBIAN[@]}"; do 
+    #shellcheck disable=SC2143
+    if grep -q "$os" /etc/os-release  >/dev/null 2>&1; then
+      os_recommended=true
+      break
+    fi
+  done
+fi
+
+if [[ "$os_recommended" == false ]]; then
+  echo
+  echo "WARNING: This device isn't running the newest recommended version of the Debian Linux OS."
+  if grep "stretch" /etc/os-release >/dev/null 2>&1; then
+    echo "This device appears to be running Debian 9 (\"Stretch\"), which has been End of Life (EOL) since June 2022 and is no longer actively supported by the community."
+    echo "If you encounter issues, consider upgrading to Debian 11 (\"Bullseye\") or 12 (\"Bookworm\")."
+    echo
+    echo "We can try to install Docker anyway, but if you come across any issues, we unfortunately are unable to support you."
+    echo "In that case, please upgrade your OS to Debian $RECOMMENDED_DEBIAN."
+  elif [[ -f /etc/os-release ]]; then
+    echo "This device appears to be running Debian $(sed -n 's/^VERSION=\"\(.*\)\"$/\1/p' /etc/os-release 2>/dev/null). Although installation will probably work, we recommend upgrading your OS to Debian $RECOMMENDED_DEBIAN if possible."
+  elif [[ -n "$MACHTYPE" ]]; then
+    echo "This device appears to be running a non-Debian OS identified by $MACHTYPE. This script only works on DEBIAN operating systems as it uses Debian specific commands like \"apt\" and \"dpkg\"."
+    echo "Aborting!"
+    exit 99
+  else 
+    echo "This device appears to be running an unknown OS. This script relies on specific Debian commands commands like \"apt\" and \"dpkg\"."
+    echo "As a result, the script will probably fail. You can try to continue, but we are unable to support you if any errors occur."
+    echo "In that case, please upgrade your OS to Debian $RECOMMENDED_DEBIAN, using for example to the latest version of DietPi, Raspberry Pi OS, Armbian, or Ubuntu."
+  fi
 fi
 
 # check if the current architecture is supported
 #shellcheck disable=SC2076
-if [[ ! " ${SUPPORTED_ARCH[*]} " =~ " $(dpkg --print-architecture 2>/dev/null || echo false) " ]]; then
+
+ARCH="$(dpkg --print-architecture 2>/dev/null || echo "${MACHTYPE%%*-}")"
+if [[ "$ARCH" == "arm" ]] && [[ "${MACHTYPE: -9}" == "gnueabihf" ]]; then ARCH="armhf"; fi
+ARCH="${ARCH:-unknown}"
+
+if [[ ! " ${SUPPORTED_ARCH[*]} " =~ " $ARCH " ]]; then
   echo
-  echo "WARNING: Your system reports \"$(dpkg --print-architecture 2>/dev/null || true)\" as architecture."
+  echo "WARNING: Your system reports \"$$ARCH\" as architecture."
   echo "         This is not supported by most of the SDR-Enthusiasts SDR-related containers."
   echo "         These only support the following architectures: ${SUPPORTED_ARCH[*]}."
   echo "         You can continue to use this script, but please note that you can't use this system with any of the SDR-Enthusiasts containers."
@@ -92,13 +150,10 @@ fi
 
 read -r -p "Press ENTER to start."
 
-if grep "Raspberry Pi 4" /sys/firmware/devicetree/base/model >/dev/null 2>&1; then deps+=(uhubctl); fi
-if ! grep "bookworm" /etc/os-release >/dev/null 2>&1; then deps+=(netcat); else deps+=(netcat-openbsd); fi
-
 echo -n "First we will update your system and install some dependencies ... "
 sudo apt-get update -q -y >/dev/null
 sudo apt-get upgrade -q -y
-sudo apt-get install -q -y "${deps[@]}" >/dev/null
+sudo apt-get install -q -y "${APT_INSTALLS[@]}" >/dev/null
 
 if ! grep sudo /etc/group | grep -e ":${USER}$" >/dev/null 2>&1; then
   echo "We'll start by adding your login name, \"${USER}\", to \"sudoers\". This will enable you to use \"sudo\" without having to type your password every time."
@@ -258,20 +313,6 @@ then
         # First install the UDEV rules for RTL-SDR dongles
         sudo -E "$(which bash)" -c "curl -sL -o /etc/udev/rules.d/rtl-sdr.rules https://raw.githubusercontent.com/wiedehopf/adsb-scripts/master/osmocom-rtl-sdr.rules"
         # Next, exclude the drivers so the dongles stay accessible
-        # Please keep the list in this order and add any additional ones to the BOTTOM. 
-        BLOCKED_MODULES=()
-        BLOCKED_MODULES+=("rtl2832_sdr")
-        BLOCKED_MODULES+=("dvb_usb_rtl2832u")
-        BLOCKED_MODULES+=("dvb_usb_rtl28xxu")
-        BLOCKED_MODULES+=("dvb_usb_v2")
-        # BLOCKED_MODULES+=("8192cu")
-        BLOCKED_MODULES+=("r820t")
-        BLOCKED_MODULES+=("rtl2830")
-        BLOCKED_MODULES+=("rtl2832")
-        BLOCKED_MODULES+=("rtl2838")
-        # BLOCKED_MODULES+=("rtl8192cu")
-        # BLOCKED_MODULES+=("rtl8xxxu")
-        BLOCKED_MODULES+=("dvb_core")
         echo -n "Excluding and unloading any competing RTL-SDR drivers... "
         UNLOAD_SUCCESS=true
         for module in "${BLOCKED_MODULES[@]}"
