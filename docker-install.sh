@@ -66,13 +66,17 @@ cat << "EOM"
  /__|___|___( >< )___|___|__\    |____/ \___/ \___|_|\_\___|_|    |___|_| |_|___/\__\__,_|_|_|
            _/`--`\_
 jgs       (/------\)
-EOM
-echo
-echo "Welcome to the Docker Infrastructure installation script"
-echo "We will help you install Docker and Docker-compose."
-echo "and then help you with your configuration."
-echo
 
+Welcome to the Docker Infrastructure installation script. We will help you install Docker and Docker-compose
+and then help you with your configuration.
+
+This script is Copyright 2021-2023 Ramon F. Kolb (kx1t) and maintained by the SDR-Enthusiasts Organization.
+It is licensed under the terms and conditions of the MIT license.
+https://github.com/sdr-enthusiasts/docker-install/main/LICENSE
+
+Join us at https://discord.com/invite/mBRTWnjS3M where we can provide help and further support.
+
+EOM
 if which jq >/dev/null 2>&1 && which curl >/dev/null 2>&1
 then
     echo "The script was last updated on $(curl -sSL -X GET -H "Cache-Control: no-cache" https://api.github.com/repos/sdr-enthusiasts/docker-install/commits??path=docker-install.sh | jq -r '.[0].commit.committer.date')"
