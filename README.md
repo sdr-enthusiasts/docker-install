@@ -43,6 +43,7 @@ After running this script, your system should be ready to use `docker` and `dock
 ## How to run it?
 
 - Feel free to inspect the script [here](docker-install.sh). You should really not blindly run other people's script - make sure you feel comfortable with what it does before executing it.
+- The script assumes that `wget` is available, as it is on most systems. If it isn't, you may have to install it before running the script  with `sudo apt update && sudo apt install -y wget`
 - To use it, you can enter the following command in your login session:
 
 ```bash

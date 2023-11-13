@@ -77,21 +77,25 @@ https://github.com/sdr-enthusiasts/docker-install/main/LICENSE
 Join us at https://discord.com/invite/mBRTWnjS3M where we can provide help and further support.
 
 EOM
-if which jq >/dev/null 2>&1 && which curl >/dev/null 2>&1
-then
-    echo "The script was last updated on $(curl -sSL -X GET -H "Cache-Control: no-cache" https://api.github.com/repos/sdr-enthusiasts/docker-install/commits??path=docker-install.sh | jq -r '.[0].commit.committer.date')"
-    echo 
+
+if ! which jq >/dev/null 2>& || ! which curl >/dev/null 2>&1; then
+  echo "One moment while we install the minimally needed software for the script to run. This will take 15-30 seconds (or longer on systems with very slow internet)"
+  sudo bash -c "apt -qq update >/dev/null 2>&1 && apt -qq -y install curl jq >/dev/null 2>&1"
 fi
 
-echo "Note - this script makes use of \"sudo\" to install Docker."
-echo "If you haven't added your current login to the \"sudoer\" list,"
-echo "you may be asked for your password at various times during the installation."
-echo
-echo "This script strongly prefers a \"standard\" OS setup of Debian Buster/Bullseye/Bookworm, including variations like"
-echo "Raspberry Pi OS, DietPi, Armbian, or Ubuntu. It uses 'apt-get', 'dpkg', and 'wget' to get started, and assumes access to"
-echo "the standard package repositories".
-echo
-echo "If you are starting with a newly installed Linux build, we strongly suggest you to use the latest version of Debian (currently Debian 12 \"Bookworm\")."
+echo "The script was last updated on $(curl -sSL -X GET -H "Cache-Control: no-cache" https://api.github.com/repos/sdr-enthusiasts/docker-install/commits??path=docker-install.sh | jq -r '.[0].commit.committer.date')"
+cat << "EOM"
+Note - this script makes use of "sudo" to install Docker.
+If you haven't added your current login to the "sudoer" list,
+you may be asked for your password at various times during the installation.
+
+This script strongly prefers a "standard" OS setup of Debian Buster/Bullseye/Bookworm, including variations like
+Raspberry Pi OS, DietPi, Armbian, or Ubuntu. It uses 'apt-get', 'dpkg', and 'wget' to get started, 
+and assumes access to the standard package repositories.
+
+If you are starting with a newly installed Linux build, we strongly suggest you to use 
+the latest version of Debian (currently Debian 12 "Bookworm").
+EOM
 
 if [[ "$EUID" == 0 ]]; then
     echo
@@ -155,6 +159,7 @@ fi
 # Before installing the files, remove the ones in the command line that have been marked with "no-xxx"
 # For example, set "no-chrony" to omit Chrony from being installed.
 
+#shellcheck disable=SC2199
 if [[ -n "$@" ]]; then
   readarray -d ' ' -t argv <<< "$@"
   echo -n "The following applications will be excluded from the installation: " 
@@ -282,6 +287,9 @@ else
       echo "Docker-compose was not installed correctly - you may need to do this manually."
     fi
 fi
+
+# clean up the "get-docker.sh" script if it's still there:
+rm -f get-docker.sh
 
 # Now make sure that libseccomp2 >= version 2.4. This is necessary for Bullseye-based containers
 # This is often an issue on Buster and Stretch-based host systems with 32-bits Rasp Pi OS installed pre-November 2021.
