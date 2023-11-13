@@ -78,7 +78,7 @@ Join us at https://discord.com/invite/mBRTWnjS3M where we can provide help and f
 
 EOM
 
-if ! which jq >/dev/null 2>& || ! which curl >/dev/null 2>&1; then
+if ! which jq >/dev/null 2>&1 || ! which curl >/dev/null 2>&1; then
   echo "One moment while we install the minimally needed software for the script to run. This will take 15-30 seconds (or longer on systems with very slow internet)"
   sudo bash -c "apt -qq update >/dev/null 2>&1 && apt -qq -y install curl jq >/dev/null 2>&1"
 fi
