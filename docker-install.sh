@@ -85,6 +85,7 @@ fi
 
 echo "The script was last updated on $(date -d "$(curl -sSL -X GET -H "Cache-Control: no-cache" https://api.github.com/repos/sdr-enthusiasts/docker-install/commits??path=docker-install.sh | jq -r '.[0].commit.committer.date')")"
 cat << "EOM"
+
 Note - this script makes use of "sudo" to install Docker.
 If you haven't added your current login to the "sudoer" list,
 you may be asked for your password at various times during the installation.
