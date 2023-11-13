@@ -154,6 +154,24 @@ fi
 
 read -r -p "Press ENTER to start."
 
+# Before installing the files, remove the ones in the command line that have been marked with "no-xxx"
+# For example, set "no-chrony" to omit Chrony from being installed.
+
+readarray -d ' ' -t argv <<< "$@"
+
+for i in "${argv[@]}"; do
+  i="${i,,}"             # make lowercase
+  i="${i//[$'\t\r\n ']}" # strip any newlines, spaces, etc.
+  if [[ "${i:0:3}" == "no-" ]]; then
+    for j in "${!APT_INSTALLS[@]}"; do
+      if [[ "${i:3}" == "${APT_INSTALLS[j]}" ]]; then
+        echo "We won't install ${APT_INSTALLS[j]}"
+        unset "APT_INSTALLS[j]"
+      fi
+	  done
+  fi
+done
+
 echo -n "First we will update your system and install some dependencies ... "
 sudo apt-get update -q -y >/dev/null
 sudo apt-get upgrade -q -y

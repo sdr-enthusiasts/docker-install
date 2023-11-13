@@ -1,8 +1,17 @@
 # docker-install
 
+Script to help install Docker on Raspberry Pi and devices with similar Debian-based OSes
+
 <img align="right" src="https://raw.githubusercontent.com/sdr-enthusiasts/sdr-enthusiast-assets/main/SDR%20Enthusiasts.svg" height="300">
 
-Script to help install Docker on Raspberry Pi and devices with similar Debian-based OSes
+- [docker-install](#docker-install)
+  - [What is it?](#what-is-it)
+  - [How to run it?](#how-to-run-it)
+  - [Command Line Options](#command-line-options)
+  - [Troubleshooting](#troubleshooting)
+  - [Sample `docker-compose` configurations](#sample-docker-compose-configurations)
+  - [Errors and how to deal with them](#errors-and-how-to-deal-with-them)
+  - [License](#license)
 
 ## What is it?
 
@@ -37,7 +46,22 @@ After running this script, your system should be ready to use `docker` and `dock
 - To use it, you can enter the following command in your login session:
 
 ```bash
-bash <(curl -s https://raw.githubusercontent.com/sdr-enthusiasts/docker-install/main/docker-install.sh)
+bash <(wget -q -O - https://raw.githubusercontent.com/sdr-enthusiasts/docker-install/main/docker-install.sh)
+```
+
+## Command Line Options
+
+The script will install a number of packages, some of which are mandatory while others are optional. You can find the packages that will be installed [here](https://github.com/sdr-enthusiasts/docker-install/blob/main/docker-install.sh#L22).
+
+If you want to exclude certain packages from being installed, you can do so by adding them to the command line with the prefix `no-`. For example to exclude `chrony` from being installed, you would use `no-chrony`.
+
+In order to use command line options, it's easiest to download the script first, and then execute it from the command line like in this example:
+
+```bash
+wget -q https://raw.githubusercontent.com/sdr-enthusiasts/docker-install/main/docker-install.sh
+chmod +x docker-install.sh
+./docker-install.sh no-chrony
+rm -f ./docker-install.sh
 ```
 
 ## Troubleshooting
