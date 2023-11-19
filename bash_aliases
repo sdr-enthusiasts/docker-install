@@ -50,3 +50,44 @@ function dip() {
         fi
     done
 }
+
+function transfer() {
+        # from transfer.sh -- use this function to easily transfer and retrieves files in the cloud
+        # file size is up to 10 Gb are stored for 14 days
+        # The output of this function is a URL that can be used to retrieve the file with `wget` or `curl`
+        if [ $# -eq 0 ]; then
+                printf "No arguments specified.\nUsage:\nUploading files:   transfer <file|directory>\nDownloading files: transfer https://transfer.sh/filename [dest_filename]\n" >&2
+                return 1
+        fi
+        file="$1"
+        file_name=$(basename "$file")
+        if [[ "${file:0:4}" == "http" ]]; then
+                # transfer the file back to us
+                if [[ -z "$2" ]]; then dest="$file_name"; else dest="$2"; fi
+                if [[ -e "$dest" ]]; then
+                       printf "Error - destination file \"%s\" already exists. Please remove that file first, or use \"transfer https://transfer.sh/filename new_filename\"\n" "$dest"
+                       return 1
+                fi
+                curl --progress-bar "$file" > "$dest"
+                if [[ "${dest##*.}" == "tgz" ]]; then
+                        echo "You can unpack this file tree with \"tar xvf $dest\" or \"tar xvf $dest -C /target/directory\""
+                fi
+                return 0
+        fi
+        if [ ! -e "$file" ]; then
+                echo "$file: No such file or directory" >&2
+                return 1
+        fi
+        if [ -d "$file" ]; then
+                file_name="$file_name.tgz"
+                tempfile=$(mktemp --suffix=.tgz)
+                echo -n "Compressing directory $file... "
+                tar zcf "$tempfile" "$file"
+                echo "Uploading to transfer.sh..."
+                curl --progress-bar --upload-file "$tempfile" "https://transfer.sh/$file_name"
+                rm -f "$tempfile"
+        else
+                curl --progress-bar --upload-file "$file" "https://transfer.sh/$file_name"
+        fi
+        echo
+}
