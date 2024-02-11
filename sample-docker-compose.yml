@@ -452,14 +452,14 @@ services:
       - 'c 189:* rwm'
     environment:
       - TZ=${FEEDER_TZ}
-      - SERIAL=${ACARS_SDR_SERIAL}
+      - SOAPYSDR=driver=rtlsdr,serial=${ACARS_SDR_SERIAL}
       - FREQUENCIES=${ACARS_FREQUENCIES}
       - GAIN=${ACARS_SDR_GAIN}
-      - SERVER=acars_router
-      - SERVER_PORT=5550
+      - OUTPUT_SERVER=acars_router
+      - OUTPUT_SERVER_PORT=5550
       - FEED_ID=${ACARS_FEEDER_ID}
     volumes:
-      - /dev:/dev:ro
+      - /dev:/dev:rw
     tmpfs:
       - /run:exec,size=64M
       - /var/log
@@ -475,7 +475,7 @@ services:
       - 'c 189:* rwm'
     environment:
       - TZ=${FEEDER_TZ}
-      - SERIAL=${VDLM_SDR_SERIAL}
+      - SOAPYSDR=driver=rtlsdr,serial=${VDLM_SDR_SERIAL}
       - FREQUENCIES=${VDLM_FREQUENCIES}
       - GAIN=${VDLM_SDR_GAIN}
       - ZMQ_MODE=server
