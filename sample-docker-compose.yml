@@ -161,7 +161,7 @@ services:
       - DUMP978_SDR_PPM=${UAT_SDR_PPM}
       - LAT=${FEEDER_LAT}
       - LON=${FEEDER_LONG}
-      - ENABLE_PROMETHEUS=true
+      - ENABLE_PROMETHEUS=true  # set to true if you are configuring Prometheus/Grafana dashboards
     ports:
       - 30979:30979
       - 30978:30978
