@@ -11,9 +11,14 @@ FEEDER_HEYWHATSTHAT_ID=<your heywhatsthat ID from the step above>
 FEEDER_HEYWHATSTHAT_ALTS=<desired theoretical range altitudes>
 #
 # SDR parameters:
+# for ADSB:
 ADSB_SDR_SERIAL=<your SDR serial>
 ADSB_SDR_GAIN=<your desired gain, or autogain>
-ADSB_SDR_PPM=<your PPM from the step above>
+ADSB_SDR_PPM=<your PPM value-omit if using a SRD with TCXO>
+# for UAT:
+UAT_SDR_SERIAL="sdr-serial-number"
+UAT_SDR_GAIN=autogain
+UAT_SDR_PPM="sdr-ppm"
 #
 # Feeder parameters:
 PIAWARE_FEEDER_ID=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
@@ -32,12 +37,6 @@ VRS_ADMIN_USERNAME=admin
 VRS_ADMIN_PASSWORD=my_password!234
 #
 # ACARS/VDML related parameters:
-ADSB_SDR_SERIAL="sdr-serial-number"
-ADSB_SDR_GAIN=autogain
-ADSB_SDR_PPM="sdr-ppm"
-UAT_SDR_SERIAL="sdr-serial-number"
-UAT_SDR_GAIN=autogain
-UAT_SDR_PPM="sdr-ppm"
 ACARS_FREQUENCIES='130.450;130.825;130.850;131.525;131.550;131.725;131.825;131.850'
 ACARS_FEEDER_ID=XX-XXXX-ACARS
 VDLM_SDR_SERIAL="sdr-serial-number"

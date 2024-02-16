@@ -156,13 +156,17 @@ services:
       - 'c 189:* rwm'
     environment:
       - TZ=${FEEDER_TZ}
-      - READSB_RTLSDR_DEVICE=${ADSB_SDR_SERIAL}
-      - READSB_RTLSDR_PPM=${ADSB_SDR_PPM}
-      - READSB_GAIN=${ADSB_SDR_GAIN}
       - DUMP978_RTLSDR_DEVICE=${UAT_SDR_SERIAL}
       - DUMP978_SDR_GAIN=${UAT_SDR_GAIN}
       - DUMP978_SDR_PPM=${UAT_SDR_PPM}
-      - AUTOGAIN_INITIAL_PERIOD=7200
+      - LAT=${FEEDER_LAT}
+      - LON=${FEEDER_LONG}
+      - ENABLE_PROMETHEUS=true
+    ports:
+      - 30979:30979
+      - 30978:30978
+      - 30980:80
+      - 9275:9273
     volumes:
       - /opt/adsb/dump978/autogain:/run/autogain
       - /dev:/dev:ro
