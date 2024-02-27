@@ -346,6 +346,7 @@ then
         echo -n "Getting the latest UDEV rules... "
         # First install the UDEV rules for RTL-SDR dongles
         sudo -E "$(which bash)" -c "curl -sL -o /etc/udev/rules.d/rtl-sdr.rules https://raw.githubusercontent.com/wiedehopf/adsb-scripts/master/osmocom-rtl-sdr.rules"
+        sudo -E "$(which bash)" -c "curl -sL -o /etc/udev/rules.d/dump978-fa.rules https://raw.githubusercontent.com/flightaware/dump978/master/debian/dump978-fa.udev"
         # Next, exclude the drivers so the dongles stay accessible
         echo -n "Excluding and unloading any competing RTL-SDR drivers... "
         UNLOAD_SUCCESS=true
