@@ -1,7 +1,7 @@
 # Config parameters for ASDB Docker Containers:
 # Station characteristics:
-FEEDER_ALT_FT=<your antenna's altitude in feet>
-FEEDER_ALT_M=<your antenna's altitude in metres>
+FEEDER_ALT_FT=<your antennas altitude in feet>
+FEEDER_ALT_M=<your antennas altitude in metres>
 FEEDER_LAT=<your latitude>
 FEEDER_LONG=<your longitude>
 FEEDER_TZ=<your timezone>
@@ -35,7 +35,7 @@ ULTRAFEEDER_UUID=<your UUID from the step above>
 # VRS parameters:
 VRS_ADMIN_USERNAME=admin
 VRS_ADMIN_PASSWORD=my_password!234
-#
+# ----------------------------------------------------------------------
 # ACARS/VDML related parameters:
 ACARS_FREQUENCIES='130.450;130.825;130.850;131.525;131.550;131.725;131.825;131.850'
 ACARS_FEEDER_ID=XX-XXXX-ACARS
@@ -43,19 +43,37 @@ VDLM_SDR_SERIAL="sdr-serial-number"
 VDLM_SDR_GAIN="sdr-gain"
 VDLM_FREQUENCIES='136.650;136.675;136.725;136.775;136.825;136.875;136.975'
 VDLM_FEEDER_ID=XX-XXXX-VDL
-#
+# ----------------------------------------------------------------------
 # AIS related parameters:
-SX_SHARING_KEY=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-SX_SERIAL_NUMBER=SXTRPI00xxxx
-SX_RTLSDR_DEVICE_SERIAL=sdr-serial-number
-SX_RTLSDR_GAIN=auto
-SX_UDP_FEEDS=5.9.207.224:xxxxx,ais.vesselfinder.com:xxxx,144.76.54.111:xxxxx,ais2adsb:9000,aisfeed.hpradar.com:4006:JSON on,83.220.137.136:xxxxx
-SX_EXTRA_OPTIONS=-p xx -a 192K -H http://aprs.fi/jsonais/post/xxxxxx ID AA0AA PROTOCOL aprs INTERVAL 30 RESPONSE off -H http://feed.airframes.io:5599 ID my_station_name INTERVAL 30 RESPONSE off
-SX_STATION_NAME=My&nbsp;station&nbsp;name&nbsp;
+# ShipFeeder receiver and webpage related parameters:
+RTLSDR_DEVICE_SERIAL=DEVICE-SERIAL
+RTLSDR_DEVICE_GAIN=xxx
+RTLSDR_DEVICE_PPM=xxx
+AISCATCHER_DECODER_AFC_WIDE=on
+AISCATCHER_CHANNELS=AB CD
+STATION_NAME=My&nbsp;Station&nbsp;Name
+#
+# keys and params for aggregators:
+# If you aren't feeding a specific aggregator, leave the value EMPTY or remove the parameter
+AIRFRAMES_STATION_ID=XX-XXXXXXX-AIS
+AISCATCHER_FEEDER_KEY=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+AISHUB_UDP_PORT=xxxx
+APRSFI_FEEDER_KEY=xxxxxxx
+APRSFI_STATION_ID=MYCALL
+BOATBEACON_SHAREDATA=true
+HPRADAR_UDP_PORT=xxxx
+MARINETRAFFIC_UDP_PORT=xxxxx
+MYSHIPTRACKING_UDP_PORT=xxxxx
+RADARVIRTUEL_FEEDER_KEY=xxxxxxxxx
+RADARVIRTUEL_STATION_ID=xx
+SHIPFINDER_SHAREDATA=true
+SHIPPINGEXPLORER_UDP_PORT=xxxxx
+SHIPXPLORER_SHARING_KEY=xxxxxxxxxxxxxxxxxxx
+SHIPXPLORER_SERIAL_NUMBER=SXTRPI00xxxx
+VESSELFINDER_UDP_PORT=xxxx
+VESSELTRACKER_UDP_PORT=xxxx
 VESSELALERT_MASTODON_TOKEN=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 VESSELALERT_MASTODON_CUSTOM_FIELD=Created with VesselAlert by kx1t - https://vesselalert.com
 VESSELALERT_DISCORD_NAME=Station_name near xxxxx harbor
 VESSELALERT_AVATAR_URL=https://link.to/my_avatar.jpg
 VESSELALERT_DISCORD_WEBHOOKS=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx,xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-
-

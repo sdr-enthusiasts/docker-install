@@ -608,34 +608,59 @@ services:
 
 ######################################################################################################################################
 # AIS (Ship and Vessel related reporting)
-# ShipXplorer:    decode AIS signals at 162 MHz and send them to aggregators including
+# shipfeeder :    decode AIS signals at 162 MHz and send them to aggregators including
 #                 ShipXplorer, airframes.io, HPRadar, VesselTracker, VesselFinder, MarineTraffic, aprs.fi, etc. 
 # VesselAlert:    send Mastodon and Discord notification about ships heard
 # screenshot-ais: add-on to VesselAlert to include screenshots in the notification
 # ais2adsb:       add-on to ShipXplorer and VirtualRadarServer to show ships on the VRS map.
 
-  shipxplorer:
-    image: ghcr.io/sdr-enthusiasts/shipxplorer
-    container_name: shipxplorer
-    hostname: shipxplorer
-    restart: unless-stopped
+  shipfeeder:
+    image: ghcr.io/sdr-enthusiasts/docker-shipfeeder
+    container_name: shipfeeder
+    hostname: shipfeeder
+    restart: always
     environment:
+#     general parameters:
       - VERBOSE_LOGGING=
-      - SHARING_KEY=${SX_SHARING_KEY}
-      - SERIAL_NUMBER=${SX_SERIAL_NUMBER}
-      - RTLSDR_DEVICE_SERIAL=${SX_RTLSDR_DEVICE_SERIAL}
-      - UDP_FEEDS=${SX_UDP_FEEDS}
-      - RTLSDR_DEVICE_GAIN=${SX_RTLSDR_GAIN}
+#     ais-catcher general and website related parameters
       - AISCATCHER_EXTRA_OPTIONS=${SX_EXTRA_OPTIONS}
-      - STATION_NAME=${SX_STATION_NAME}${SX_SERIAL_NUMBER}
+      - STATION_NAME=${STATION_NAME}
       - STATION_HISTORY=3600
       - BACKUP_INTERVAL=5
-      - SXFEEDER_LON=${FEEDER_LONG}
-      - SXFEEDER_LAT=${FEEDER_LAT}
+      - FEEDER_LONG=${FEEDER_LONG}
+      - FEEDER_LAT=${FEEDER_LAT}
       - SITESHOW=on
       - PROMETHEUS_ENABLE=on
+      - REALTIME=on
+#     ais-catcher receiver related parameters
+      - RTLSDR_DEVICE_SERIAL=${RTLSDR_DEVICE_SERIAL}
+      - RTLSDR_DEVICE_GAIN=${RTLSDR_DEVICE_GAIN}
+      - RTLSDR_DEVICE_PPM=${RTLSDR_DEVICE_PPM}
+      - RTLSDR_DEVICE_BANDWIDTH=${RTLSDR_DEVICE_BANDWIDTH}
+      - AISCATCHER_DECODER_AFC_WIDE=${AISCATCHER_DECODER_AFC_WIDE}
+#     aggregrators related parameters
+      - AIRFRAMES_STATION_ID=${AIRFRAMES_STATION_ID}
+      - AISCATCHER_FEEDER_KEY=${AISCATCHER_FEEDER_KEY}
+      - AISHUB_UDP_PORT=${AISHUB_UDP_PORT}
+      - APRSFI_FEEDER_KEY=${APRSFI_FEEDER_KEY}
+      - BOATBEACON_SHAREDATA=${BOATBEACON_SHAREDATA}
+      - HPRADAR_UDP_PORT=${HPRADAR_UDP_PORT}
+      - MARINETRAFFIC_UDP_PORT=${MARINETRAFFIC_UDP_PORT}
+      - MYSHIPTRACKING_UDP_PORT=${MYSHIPTRACKING_UDP_PORT}
+      - RADARVIRTUEL_FEEDER_KEY=${RADARVIRTUEL_FEEDER_KEY}
+      - RADARVIRTUEL_STATION_ID=${RADARVIRTUEL_STATION_ID}
+      - SHIPFINDER_SHAREDATA=${SHIPFINDER_SHAREDATA}
+      - SHIPPINGEXPLORER_UDP_PORT=${SHIPPINGEXPLORER_UDP_PORT}
+      - SHIPXPLORER_SHARING_KEY=${SHIPXPLORER_SHARING_KEY}
+      - SHIPXPLORER_SERIAL_NUMBER=${SHIPXPLORER_SERIAL_NUMBER}
+      - VESSELFINDER_UDP_PORT=${VESSELFINDER_UDP_PORT}
+      - VESSELTRACKER_UDP_PORT=${VESSELTRACKER_UDP_PORT}
+      - UDP_FEEDS=${SX_UDP_FEEDS}
+#     incoming UDP data related parameters:
+      - AISCATCHER_UDP_INPUTS=${AISCATCHER_UDP_INPUTS}
     ports:
       - 90:80
+      - 9988:9988/udp
     device_cgroup_rules:
       - 'c 189:* rwm'
     tmpfs:
@@ -643,8 +668,9 @@ services:
     volumes:
       - "/etc/localtime:/etc/localtime:ro"
       - "/etc/timezone:/etc/timezone:ro"
-      - "/opt/adsb/shipxplorer/data:/data"
-      - /dev:/dev:ro
+      - "/opt/ais/shipxplorer/data:/data"
+      - /dev:/dev:rw
+      # - /opt/shipxplorer/cpuinfo/cpuinfo:/proc/cpuinfo # only for x86 systems - see README.md
 
   vesselalert:
     image: ghcr.io/sdr-enthusiasts/vesselalert
@@ -652,7 +678,7 @@ services:
     hostname: vesselalert
     restart: always
     environment:
-      - AIS_URL=http://shipxplorer
+      - AIS_URL=http://shipfeeder
       - CHECK_INTERVAL=30
       - MASTODON_SERVER=airwaves.social
       - MASTODON_ACCESS_TOKEN=${VESSELALERT_MASTODON_TOKEN}
@@ -686,7 +712,7 @@ services:
     shm_size: 1gb
     environment:
       - LOAD_SLEEP_TIME=15
-      - BASE_URL=http://shipxplorer/?tab=map
+      - BASE_URL=http://shipfeeder/?tab=map
       - MAXTIME=60
       - MAP_ARGS=map=OpenStreetMap
     ports:
