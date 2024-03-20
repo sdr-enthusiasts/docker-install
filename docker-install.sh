@@ -344,9 +344,16 @@ then
     tmpdir=$(mktemp -d)
     pushd "$tmpdir" >/dev/null || exit
         echo -n "Getting the latest UDEV rules... "
+        sudo mkdir -p -m 0755 /etc/udev/rules.d /etc/udev/hwdb.d
         # First install the UDEV rules for RTL-SDR dongles
         sudo -E "$(which bash)" -c "curl -sL -o /etc/udev/rules.d/rtl-sdr.rules https://raw.githubusercontent.com/wiedehopf/adsb-scripts/master/osmocom-rtl-sdr.rules"
         sudo -E "$(which bash)" -c "curl -sL -o /etc/udev/rules.d/dump978-fa.rules https://raw.githubusercontent.com/flightaware/dump978/master/debian/dump978-fa.udev"
+        # Now install the UDEV rules for SDRPlay devices
+        sudo -E "$(which bash)" -c "curl -sL -o /etc/udev/rules.d/66-mirics.rules https://raw.githubusercontent.com/sdr-enthusiasts/install-libsdrplay/main/66-mirics.rules"
+	      sudo -E "$(which bash)" -c "curl -sL -o /etc/udev/hwdb.d/20-sdrplay.hwdb https://raw.githubusercontent.com/sdr-enthusiasts/install-libsdrplay/main/20-sdrplay.hwdb"
+        # make sure the permissions are set correctly
+        sudo -E "$(which bash)" -c "chmod 0755 /etc/udev/rules.d /etc/udev/hwdb.d"
+        sudo -E "$(which bash)" -c "chmod go=r /etc/udev/rules.d/* /etc/udev/hwdb.d/*"
         # Next, exclude the drivers so the dongles stay accessible
         echo -n "Excluding and unloading any competing RTL-SDR drivers... "
         UNLOAD_SUCCESS=true
@@ -422,4 +429,4 @@ echo "Once rebooted, you are ready to go! For safety reasons, we won't do the re
 echo ""
 echo "sudo reboot"
 echo ""
-echo "That's all -- thanks for using our docker-install script. You are now ready to create docker-compose.yml files and start running containers!"
+echo "That is all -- thanks for using our docker-install script. You are now ready to create docker-compose.yml files and start running containers!"
