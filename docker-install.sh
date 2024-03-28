@@ -3,7 +3,7 @@
 # DOCKER-INSTALL.SH -- Installation script for the Docker infrastructure on a Raspbian or Ubuntu system
 # Usage: source <(curl -s https://raw.githubusercontent.com/sdr-enthusiasts/docker-install/main/docker-install.sh)
 #
-# Copyright 2021-2023 Ramon F. Kolb (kx1t)
+# Copyright 2021-2024 Ramon F. Kolb (kx1t)
 #
 # Licensed under the terms and conditions of the MIT license.
 # https://github.com/sdr-enthusiasts/docker-install/main/LICENSE
@@ -12,6 +12,9 @@
 # VARIABLE DEFINITIONS:
 # These are the supported architectures for SDR-enthusiasts docker containers
 # We will warn if the system reports a different architecture
+#
+# 28-Mar-2024 - note, in the future, we are considering removing armhf as supported architecture for the installation
+#               because several of our containers no longer work on this architecture.
 SUPPORTED_ARCH=(armhf)
 SUPPORTED_ARCH+=(arm64)
 SUPPORTED_ARCH+=(aarch64)
@@ -70,7 +73,7 @@ jgs       (/------\)
 Welcome to the Docker Infrastructure installation script. We will help you install Docker and Docker-compose
 and then help you with your configuration.
 
-This script is Copyright 2021-2023 Ramon F. Kolb (kx1t) and maintained by the SDR-Enthusiasts Organization.
+This script is Copyright 2021-2024 Ramon F. Kolb (kx1t) and other contributors. It is maintained by the SDR-Enthusiasts Organization.
 It is licensed under the terms and conditions of the MIT license.
 https://github.com/sdr-enthusiasts/docker-install/main/LICENSE
 
@@ -79,7 +82,7 @@ Join us at https://discord.com/invite/mBRTWnjS3M where we can provide help and f
 EOM
 
 if ! which jq >/dev/null 2>&1 || ! which curl >/dev/null 2>&1; then
-  echo "One moment while we install the minimally needed software for the script to run. This will take 15-30 seconds (or longer on systems with very slow internet)"
+  echo "One moment while we install the minimally needed software (curl and jq) for the script to run. This will take 15-30 seconds (or longer on systems with very slow internet)"
   sudo bash -c "apt -qq update >/dev/null 2>&1 && apt -qq -y install curl jq >/dev/null 2>&1"
 fi
 
@@ -89,13 +92,6 @@ cat << "EOM"
 Note - this script makes use of "sudo" to install Docker.
 If you haven't added your current login to the "sudoer" list,
 you may be asked for your password at various times during the installation.
-
-This script strongly prefers a "standard" OS setup of Debian Buster/Bullseye/Bookworm, including variations like
-Raspberry Pi OS, DietPi, Armbian, or Ubuntu. It uses 'apt-get', 'dpkg', and 'wget' to get started, 
-and assumes access to the standard package repositories.
-
-If you are starting with a newly installed Linux build, we strongly suggest you to use 
-the latest version of Debian (currently Debian 12 "Bookworm").
 EOM
 
 if [[ "$EUID" == 0 ]]; then
@@ -111,7 +107,7 @@ os_recommended=false
 if [[ -f /etc/os-release ]]; then 
   for os in "${RECOMMENDED_DEBIAN[@]}"; do 
     #shellcheck disable=SC2143
-    if grep -q "$os" /etc/os-release  >/dev/null 2>&1; then
+    if grep -q "$os" /etc/os-release; then
       os_recommended=true
       break
     fi
@@ -121,12 +117,12 @@ fi
 if [[ "$os_recommended" == false ]]; then
   echo
   echo "WARNING: This device isn't running the newest recommended version of the Debian Linux OS."
-  if grep "stretch" /etc/os-release >/dev/null 2>&1; then
+  if grep -q "stretch" /etc/os-release; then
     echo "This device appears to be running Debian 9 (\"Stretch\"), which has been End of Life (EOL) since June 2022 and is no longer actively supported by the community."
     echo "If you encounter issues, consider upgrading to Debian 11 (\"Bullseye\") or 12 (\"Bookworm\")."
     echo
     echo "We can try to install Docker anyway, but if you come across any issues, we unfortunately are unable to support you."
-    echo "In that case, please upgrade your OS to Debian $RECOMMENDED_DEBIAN."
+    echo "In that case, please upgrade your OS to Debian ${RECOMMENDED_DEBIAN[0]}."
   elif [[ -f /etc/os-release ]]; then
     echo "This device appears to be running Debian $(sed -n 's/^VERSION=\"\(.*\)\"$/\1/p' /etc/os-release 2>/dev/null). Although installation will probably work, we recommend upgrading your OS to Debian $RECOMMENDED_DEBIAN if possible."
   elif [[ -n "$MACHTYPE" ]]; then
@@ -136,8 +132,15 @@ if [[ "$os_recommended" == false ]]; then
   else 
     echo "This device appears to be running an unknown OS. This script relies on specific Debian commands commands like \"apt\" and \"dpkg\"."
     echo "As a result, the script will probably fail. You can try to continue, but we are unable to support you if any errors occur."
-    echo "In that case, please upgrade your OS to Debian $RECOMMENDED_DEBIAN, using for example to the latest version of DietPi, Raspberry Pi OS, Armbian, or Ubuntu."
+    echo "In that case, please upgrade your OS to Debian ${RECOMMENDED_DEBIAN[0]}, using for example to the latest version of DietPi, Raspberry Pi OS, Armbian, or Ubuntu."
   fi
+  echo ""
+  echo "This script strongly prefers a "standard" OS setup of Debian Buster/Bullseye/Bookworm, including variations like"
+  echo "Raspberry Pi OS, DietPi, Armbian, or Ubuntu. It uses 'apt-get', 'dpkg', and 'wget' to get started,"
+  echo "and assumes access to the standard package repositories."
+  echo ""
+  echo "If you are starting with a newly installed Linux build, we strongly suggest you to use"
+  echo "the latest version of Debian (currently Debian ${RECOMMENDED_DEBIAN[0]})."
 fi
 
 # check if the current architecture is supported
@@ -149,10 +152,20 @@ ARCH="${ARCH:-unknown}"
 
 if [[ ! " ${SUPPORTED_ARCH[*]} " =~ " $ARCH " ]]; then
   echo
-  echo "WARNING: Your system reports \"$$ARCH\" as architecture."
+  echo "WARNING: Your system reports \"$ARCH\" as architecture."
   echo "         This is not supported by most of the SDR-Enthusiasts SDR-related containers."
   echo "         These only support the following architectures: ${SUPPORTED_ARCH[*]}."
   echo "         You can continue to use this script, but please note that you can't use this system with any of the SDR-Enthusiasts containers."
+  echo
+  echo -n "Press CTRL-C to abort. "
+fi
+
+if [[ "$ARCH" == "armhf" ]]; then
+  echo
+  echo "WARNING: Your system reports \"$ARCH\" as architecture."
+  echo "         We will discontinue support for 32-bits ARM Linux in the near future. We strongly suggest you upgrade your machine, if possible,"
+  echo "         to a 64-bit Debian Linux OS, such as DietPi, Ubuntu, or Raspberry Pi OS (64 bits)."
+  echo "         You can continue to use this script, but please note that some of the SDR-Enthusiasts containers already no longer support $ARCH."
   echo
   echo -n "Press CTRL-C to abort. "
 fi
@@ -186,7 +199,7 @@ sudo apt-get update -q -y >/dev/null
 sudo apt-get upgrade -q -y
 sudo apt-get install -q -y "${APT_INSTALLS[@]}" >/dev/null
 
-if ! grep sudo /etc/group | grep -e ":${USER}$" >/dev/null 2>&1; then
+if ! grep sudo /etc/group | grep -qe ":${USER}$"; then
   echo "We'll start by adding your login name, \"${USER}\", to \"sudoers\". This will enable you to use \"sudo\" without having to type your password every time."
   echo "You may be asked to enter your password a few times below. We promise, this is the last time."
   echo
@@ -238,7 +251,7 @@ else
 }
 EOF
     sudo chmod u=rw,go=r /etc/docker/daemon.json
-    if ! grep -e "/usr/bin:" -e "/usr/bin$" <<< "$PATH" >/dev/null 2>&1; then
+    if ! grep -qe "/usr/bin:" -e "/usr/bin$" <<< "$PATH"; then
       #shellcheck disable=SC2016
       echo 'export PATH=/usr/bin:$PATH' >> ~/.bashrc
       export PATH=/usr/bin:$PATH
@@ -269,11 +282,9 @@ EOF
 fi
 
 echo -n "Checking for Docker Compose installation... "
-if which docker-compose >/dev/null 2>&1
-then
+if which docker-compose >/dev/null 2>&1; then
     echo "found! No need to install..."
-elif docker compose version >/dev/null 2>&1
-then
+elif docker compose version >/dev/null 2>&1; then
     echo "Docker Compose plugin found. Creating an alias to it for \"docker-compose \"..."
     echo "alias docker-compose=\"docker compose\"" >> ~/.bash_aliases
     source ~/.bash_aliases
@@ -300,35 +311,42 @@ echo "This is necessary to run Bullseye and later based containers on a Buster o
 OS_VERSION="$(sed -n 's/\(^\s*VERSION_CODENAME=\)\(.*\)/\2/p' /etc/os-release)"
 [[ "$OS_VERSION" == "" ]] && OS_VERSION="$(sed -n 's/^\s*VERSION=.*(\(.*\)).*/\1/p' /etc/os-release)"
 OS_VERSION=${OS_VERSION^^}
-LIBVERSION_MAJOR="$(apt-cache policy libseccomp2 | grep -e libseccomp2: -A1 | tail -n1 | sed -n 's/.*:\s*\([0-9]*\).\([0-9]*\).*/\1/p')"
-LIBVERSION_MINOR="$(apt-cache policy libseccomp2 | grep -e libseccomp2: -A1 | tail -n1 | sed -n 's/.*:\s*\([0-9]*\).\([0-9]*\).*/\2/p')"
 
-if (( LIBVERSION_MAJOR < 2 )) || (( LIBVERSION_MAJOR == 2 && LIBVERSION_MINOR < 4 )) && [[ "${OS_VERSION}" == "BUSTER" ]]
-then
-  echo "libseccomp2 needs updating. Please wait while we do this."
-  sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 04EE7237B7D453EC 648ACFD622F3D138 0E98404D386FA1D9 6ED0E7B82643E131
-  echo "deb http://deb.debian.org/debian buster-backports main" | sudo tee -a /etc/apt/sources.list.d/buster-backports.list
-  sudo apt update -y
-  sudo apt install -y -q -t buster-backports libseccomp2
-elif (( LIBVERSION_MAJOR < 2 )) || (( LIBVERSION_MAJOR == 2 && LIBVERSION_MINOR < 4 )) && [[ "${OS_VERSION}" == "STRETCH" ]]
-then
-  echo "libseccomp2 needs updating. Please wait while we do this."
-  INSTALL_CANDIDATE="$(curl -qsL http://ftp.debian.org/debian/pool/main/libs/libseccomp/ | w3m -T text/html -dump | sed -n 's/^.*\(libseccomp2_2.5.*armhf.deb\).*/\1/p' | sort | tail -1)"
-  curl -qsL -o /tmp/"${INSTALL_CANDIDATE}" http://ftp.debian.org/debian/pool/main/libs/libseccomp/"${INSTALL_CANDIDATE}"
-  sudo dpkg -i /tmp/"${INSTALL_CANDIDATE}" && rm -f /tmp/"${INSTALL_CANDIDATE}"
+if [[ "${OS_VERSION}" == "BUSTER" ]] ||  [[ "${OS_VERSION}" == "STRETCH" ]]; then
+	LIBVERSION="$(apt-cache policy libseccomp2 | grep -e libseccomp2: -A1 | tail -n1)"
+	LIBVERSION_MAJOR="$(sed -n 's/.*:\s*\([0-9]*\).\([0-9]*\).*/\1/p' <<< "$LIBVERSION")"
+	LIBVERSION_MINOR="$(sed -n 's/.*:\s*\([0-9]*\).\([0-9]*\).*/\2/p' <<< "$LIBVERSION")"
+	
+	if (( LIBVERSION_MAJOR < 2 )) || (( LIBVERSION_MAJOR == 2 && LIBVERSION_MINOR < 4 )) && [[ "${OS_VERSION}" == "BUSTER" ]]
+	then
+	  echo "libseccomp2 needs updating. Please wait while we do this."
+	  sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 04EE7237B7D453EC 648ACFD622F3D138 0E98404D386FA1D9 6ED0E7B82643E131
+	  echo "deb http://deb.debian.org/debian buster-backports main" | sudo tee -a /etc/apt/sources.list.d/buster-backports.list
+	  sudo apt update -y
+	  sudo apt install -y -q -t buster-backports libseccomp2
+	elif (( LIBVERSION_MAJOR < 2 )) || (( LIBVERSION_MAJOR == 2 && LIBVERSION_MINOR < 4 )) && [[ "${OS_VERSION}" == "STRETCH" ]]
+	then
+	  echo "libseccomp2 needs updating. Please wait while we do this."
+	  INSTALL_CANDIDATE="$(curl -qsL http://ftp.debian.org/debian/pool/main/libs/libseccomp/ | w3m -T text/html -dump | sed -n 's/^.*\(libseccomp2_2.5.*armhf.deb\).*/\1/p' | sort | tail -1)"
+	  curl -qsL -o /tmp/"${INSTALL_CANDIDATE}" http://ftp.debian.org/debian/pool/main/libs/libseccomp/"${INSTALL_CANDIDATE}"
+	  sudo dpkg -i /tmp/"${INSTALL_CANDIDATE}" && rm -f /tmp/"${INSTALL_CANDIDATE}"
+	else
+	  echo "Your system already has an acceptable version of libseccomp2. Doing some final checks on that now..."
+	fi
+	# Now make sure all went well
+	LIBVERSION="$(apt-cache policy libseccomp2 | grep -e libseccomp2: -A1 | tail -n1)"
+	LIBVERSION_MAJOR="$(sed -n 's/.*:\s*\([0-9]*\).\([0-9]*\).*/\1/p' <<< "$LIBVERSION")"
+	LIBVERSION_MINOR="$(sed -n 's/.*:\s*\([0-9]*\).\([0-9]*\).*/\2/p' <<< "$LIBVERSION")"
+	if (( LIBVERSION_MAJOR > 2 )) || (( LIBVERSION_MAJOR == 2 && LIBVERSION_MINOR >= 4 ))
+	then
+	   echo "Your system (now) uses libseccomp2 version $(apt-cache policy libseccomp2|sed -n 's/\s*Installed:\s*\(.*\)/\1/p')."
+	else
+	    echo "Something went wrong. Your system is using libseccomp2 v$(apt-cache policy libseccomp2|sed -n 's/\s*Installed:\s*\(.*\)/\1/p'), and it needs to be v2.4 or greater for the ADSB containers to work properly."
+	    echo "Please follow these instructions to fix this after this install script finishes: https://github.com/fredclausen/Buster-Docker-Fixes"
+	    read -r -p "Press ENTER to continue."
+	fi
 else
-  echo "Your system already has an acceptable version of libseccomp2. Doing some final checks on that now..."
-fi
-# Now make sure all went well
-LIBVERSION_MAJOR="$(apt-cache policy libseccomp2 | grep -e libseccomp2: -A1 | tail -n1 | sed -n 's/.*:\s*\([0-9]*\).\([0-9]*\).*/\1/p')"
-LIBVERSION_MINOR="$(apt-cache policy libseccomp2 | grep -e libseccomp2: -A1 | tail -n1 | sed -n 's/.*:\s*\([0-9]*\).\([0-9]*\).*/\2/p')"
-if (( LIBVERSION_MAJOR > 2 )) || (( LIBVERSION_MAJOR == 2 && LIBVERSION_MINOR >= 4 ))
-then
-   echo "Your system (now) uses libseccomp2 version $(apt-cache policy libseccomp2|sed -n 's/\s*Installed:\s*\(.*\)/\1/p')."
-else
-    echo "Something went wrong. Your system is using libseccomp2 v$(apt-cache policy libseccomp2|sed -n 's/\s*Installed:\s*\(.*\)/\1/p'), and it needs to be v2.4 or greater for the ADSB containers to work properly."
-    echo "Please follow these instructions to fix this after this install script finishes: https://github.com/fredclausen/Buster-Docker-Fixes"
-    read -r -p "Press ENTER to continue."
+ 	echo "Your system is not BUSTER or STRETCH based, so there should be no problem with libseccomp2."
 fi
 
 echo
@@ -338,46 +356,42 @@ echo "Ultrafeeder, Tar1090, Readsb-ProtoBuf, Acarshub, PlaneFence, PiAware, Rada
 echo "It's safe to say YES to this question and continue unless you are using a DVB-T stick to watch digital television."
 echo
 read -r -p "Please choose yes or no [Y/n] > " -n 1 text
-if [[ "${text,,}" != "n" ]]
-then
+if [[ "${text,,}" != "n" ]]; then
     echo
-    tmpdir=$(mktemp -d)
-    pushd "$tmpdir" >/dev/null || exit
-        echo -n "Getting the latest UDEV rules... "
-        sudo mkdir -p -m 0755 /etc/udev/rules.d /etc/udev/hwdb.d
-        # First install the UDEV rules for RTL-SDR dongles
-        sudo -E "$(which bash)" -c "curl -sL -o /etc/udev/rules.d/rtl-sdr.rules https://raw.githubusercontent.com/wiedehopf/adsb-scripts/master/osmocom-rtl-sdr.rules"
-        sudo -E "$(which bash)" -c "curl -sL -o /etc/udev/rules.d/dump978-fa.rules https://raw.githubusercontent.com/flightaware/dump978/master/debian/dump978-fa.udev"
-        # Now install the UDEV rules for SDRPlay devices
-        sudo -E "$(which bash)" -c "curl -sL -o /etc/udev/rules.d/66-mirics.rules https://raw.githubusercontent.com/sdr-enthusiasts/install-libsdrplay/main/66-mirics.rules"
-	      sudo -E "$(which bash)" -c "curl -sL -o /etc/udev/hwdb.d/20-sdrplay.hwdb https://raw.githubusercontent.com/sdr-enthusiasts/install-libsdrplay/main/20-sdrplay.hwdb"
-        # make sure the permissions are set correctly
-        sudo -E "$(which bash)" -c "chmod a+rX /etc/udev/rules.d /etc/udev/hwdb.d"
-        sudo -E "$(which bash)" -c "chmod go+r /etc/udev/rules.d/* /etc/udev/hwdb.d/*"
-        # Next, exclude the drivers so the dongles stay accessible
-        echo -n "Excluding and unloading any competing RTL-SDR drivers... "
-        UNLOAD_SUCCESS=true
-        for module in "${BLOCKED_MODULES[@]}"
-        do
-            if ! grep -q "$module" /etc/modprobe.d/exclusions-rtl2832.conf
-            then
-              sudo -E "$(which bash)" -c "echo blacklist $module >>/etc/modprobe.d/exclusions-rtl2832.conf"
-              sudo -E "$(which bash)" -c "echo install $module /bin/false >>/etc/modprobe.d/exclusions-rtl2832.conf"
-              sudo -E "$(which bash)" -c "modprobe -r $module 2>/dev/null" || UNLOAD_SUCCESS=false
-            fi
-        done
-        # Rebuild module dependency database factoring in blacklists
-        which depmod >/dev/null 2>&1 && sudo depmod -a  >/dev/null 2>&1 || UNLOAD_SUCCESS=false
-        # On systems with initramfs, this needs to be updated to make sure the exclusions take effect:
-        which update-initramfs >/dev/null 2>&1 && sudo update-initramfs -u  >/dev/null 2>&1 || true 
-
-        if [[ "${UNLOAD_SUCCESS}" == false ]]; then
-          echo "INFO: Although we've successfully excluded any competing RTL-SDR drivers, we weren't able to unload them. This will remedy itself when you reboot your system after the script finishes."
-        fi
-    popd >/dev/null
-    # Check tmpdir is set and not null before attempting to remove it
-    if [[ -z "$tmpdir" ]]; then
-      rm -rf "$tmpdir" >/dev/null 2>&1
+    echo -n "Getting the latest UDEV rules... "
+    sudo mkdir -p -m 0755 /etc/udev/rules.d /etc/udev/hwdb.d
+    # First install the UDEV rules for RTL-SDR dongles
+    sudo -E "$(which bash)" -c "curl -sL -o /etc/udev/rules.d/rtl-sdr.rules https://raw.githubusercontent.com/wiedehopf/adsb-scripts/master/osmocom-rtl-sdr.rules"
+    sudo -E "$(which bash)" -c "curl -sL -o /etc/udev/rules.d/dump978-fa.rules https://raw.githubusercontent.com/flightaware/dump978/master/debian/dump978-fa.udev"
+    # Now install the UDEV rules for SDRPlay devices
+    sudo -E "$(which bash)" -c "curl -sL -o /etc/udev/rules.d/66-mirics.rules https://raw.githubusercontent.com/sdr-enthusiasts/install-libsdrplay/main/66-mirics.rules"
+    sudo -E "$(which bash)" -c "curl -sL -o /etc/udev/hwdb.d/20-sdrplay.hwdb https://raw.githubusercontent.com/sdr-enthusiasts/install-libsdrplay/main/20-sdrplay.hwdb"
+    # make sure the permissions are set correctly
+    sudo -E "$(which bash)" -c "chmod a+rX /etc/udev/rules.d /etc/udev/hwdb.d"
+    sudo -E "$(which bash)" -c "chmod go+r /etc/udev/rules.d/* /etc/udev/hwdb.d/*"
+    # Next, exclude the drivers so the dongles stay accessible
+    echo -n "Excluding and unloading any competing RTL-SDR drivers... "
+    UNLOAD_SUCCESS=true
+    for module in "${BLOCKED_MODULES[@]}"; do
+    	if ! grep -q "$module" /etc/modprobe.d/exclusions-rtl2832.conf; then
+    		sudo -E "$(which bash)" -c "echo blacklist $module >>/etc/modprobe.d/exclusions-rtl2832.conf"
+   	 	sudo -E "$(which bash)" -c "echo install $module /bin/false >>/etc/modprobe.d/exclusions-rtl2832.conf"
+	    	sudo -E "$(which bash)" -c "modprobe -r $module 2>/dev/null" || UNLOAD_SUCCESS=false
+	     fi
+    done
+    # Rebuild module dependency database factoring in blacklists
+    if which depmod >/dev/null 2>&1; then
+    	sudo depmod -a  >/dev/null 2>&1 || UNLOAD_SUCCESS=false
+    else
+    	UNLOAD_SUCCESS=false
+    fi
+    # On systems with initramfs, this needs to be updated to make sure the exclusions take effect:
+    if which update-initramfs >/dev/null 2>&1; then
+    	sudo update-initramfs -u  >/dev/null 2>&1 || true
+    fi
+    
+    if [[ "${UNLOAD_SUCCESS}" == false ]]; then
+	  echo "INFO: Although we've successfully excluded any competing RTL-SDR drivers, we weren't able to unload them. This will remedy itself when you reboot your system after the script finishes."
     fi
 fi
 echo "Making sure commands will persist when the terminal closes..."
@@ -415,18 +429,22 @@ rm -f "$file"
 echo "--------------------------------"
 echo "We're done! Here are some final messages, read them carefully:"
 echo "We've installed these packages, and we think they may be useful for you in the future. So we will leave them installed:"
-echo "git, rtl-sdr"
+echo "jq, git, rtl-sdr"
 echo "If you don't want them, feel free to uninstall them using this command:"
-echo "sudo apt-get remove git rtl-sdr"
+echo "sudo apt-get remove jq git rtl-sdr"
 echo ""
+echo "We have also installed chrony as NTP (time updating) client on your system. This has probably replaced any other NTP client you may have been using."
+echo "We're using chrony because this has proven to be the most stable way of keeping your system clock up to date, which is imperative for our containers to work properly."
+echo ""
+echo "--------------------------------"
 echo "To make sure that everything works OK, you should reboot your machine."
+echo "Once rebooted, you are ready to go! For safety reasons, we won't do the reboot for you, but you can do it manually by typing:"
+echo ""
+echo "sudo reboot"
 echo ""
 echo "WARNING - if you are connected remotely to a Raspberry Pi (via SSH or VNC)"
 echo "make sure you unplug any externally powered USB devices or hubs before rebooting"
 echo "because these may cause your Raspberry Pi to get stuck in the \"off\" state!"
 echo ""
-echo "Once rebooted, you are ready to go! For safety reasons, we won't do the reboot for you, but you can do it manually by typing:"
-echo ""
-echo "sudo reboot"
-echo ""
+echo "--------------------------------"
 echo "That is all -- thanks for using our docker-install script. You are now ready to create docker-compose.yml files and start running containers!"
