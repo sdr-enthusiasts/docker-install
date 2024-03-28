@@ -352,8 +352,8 @@ then
         sudo -E "$(which bash)" -c "curl -sL -o /etc/udev/rules.d/66-mirics.rules https://raw.githubusercontent.com/sdr-enthusiasts/install-libsdrplay/main/66-mirics.rules"
 	      sudo -E "$(which bash)" -c "curl -sL -o /etc/udev/hwdb.d/20-sdrplay.hwdb https://raw.githubusercontent.com/sdr-enthusiasts/install-libsdrplay/main/20-sdrplay.hwdb"
         # make sure the permissions are set correctly
-        sudo -E "$(which bash)" -c "chmod 0755 /etc/udev/rules.d /etc/udev/hwdb.d"
-        sudo -E "$(which bash)" -c "chmod go=r /etc/udev/rules.d/* /etc/udev/hwdb.d/*"
+        sudo -E "$(which bash)" -c "chmod a+rX /etc/udev/rules.d /etc/udev/hwdb.d"
+        sudo -E "$(which bash)" -c "chmod go+r /etc/udev/rules.d/* /etc/udev/hwdb.d/*"
         # Next, exclude the drivers so the dongles stay accessible
         echo -n "Excluding and unloading any competing RTL-SDR drivers... "
         UNLOAD_SUCCESS=true
