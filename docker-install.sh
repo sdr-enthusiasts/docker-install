@@ -422,7 +422,13 @@ source ~/.bash_aliases
 echo "Adding a crontab entry to ensure your system stays clean"
 file="$(mktemp)"
 crontab -l > "$file"
+echo '#' >> "$file"
+echo '# Delete all unused containers (except those labeled do_not_prune) nightly at 3 AM' >> "$file"
+echo '# For example, docker-baseimage:rtlsdr is marked do_not_prune because it is used as a bash alias in rtl_test' >> "$file"
 echo '0 3 * * * /usr/bin/docker system prune -af --filter "label!=do_not_prune" >/dev/null 2>&1' >> "$file"
+echo '#' >> "$file"
+echo '# Delete all unused containers (incl those labeled do_not_prune) weekly at 3 AM' >> "$file"
+echo '0 4 * * 0 /usr/bin/docker system prune -af >/dev/null 2>&1' >> "$file"
 crontab - < "$file"
 rm -f "$file"
 
