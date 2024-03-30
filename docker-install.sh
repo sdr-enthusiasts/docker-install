@@ -135,7 +135,7 @@ if [[ "$os_recommended" == false ]]; then
     echo "In that case, please upgrade your OS to Debian ${RECOMMENDED_DEBIAN[0]}, using for example to the latest version of DietPi, Raspberry Pi OS, Armbian, or Ubuntu."
   fi
   echo ""
-  echo "This script strongly prefers a "standard" OS setup of Debian Buster/Bullseye/Bookworm, including variations like"
+  echo "This script strongly prefers a \"standard\" OS setup of Debian Buster/Bullseye/Bookworm, including variations like"
   echo "Raspberry Pi OS, DietPi, Armbian, or Ubuntu. It uses 'apt-get', 'dpkg', and 'wget' to get started,"
   echo "and assumes access to the standard package repositories."
   echo ""
@@ -422,35 +422,37 @@ source ~/.bash_aliases
 echo "Adding a crontab entry to ensure your system stays clean"
 file="$(mktemp)"
 crontab -l > "$file"
-echo '#' >> "$file"
-echo '# Delete all unused containers (except those labeled do_not_prune) nightly at 3 AM' >> "$file"
-echo '# For example, docker-baseimage:rtlsdr is marked do_not_prune because it is used as a bash alias in rtl_test' >> "$file"
-echo '0 3 * * * /usr/bin/docker system prune -af --filter "label!=do_not_prune" >/dev/null 2>&1' >> "$file"
-echo '#' >> "$file"
-echo '# Delete all unused containers (incl those labeled do_not_prune) weekly at 3 AM' >> "$file"
-echo '0 4 * * 0 /usr/bin/docker system prune -af >/dev/null 2>&1' >> "$file"
+{ echo '#'
+  echo '# Delete all unused containers (except those labeled do_not_prune) nightly at 3 AM'
+  echo '# For example, docker-baseimage:rtlsdr is marked do_not_prune because it is used as a bash alias in rtl_test'
+  echo '0 3 * * * /usr/bin/docker system prune -af --filter "label!=do_not_prune" >/dev/null 2>&1'
+  echo '#'
+  echo '# Delete all unused containers (incl those labeled do_not_prune) weekly at 3 AM'
+  echo '0 4 * * 0 /usr/bin/docker system prune -af >/dev/null 2>&1' 
+} >> "$file"
 crontab - < "$file"
 rm -f "$file"
+cat << "EOM"
+--------------------------------
+We're done! Here are some final messages, read them carefully:
+We've installed these packages, and we think they may be useful for you in the future. So we will leave them installed:
+jq, git, rtl-sdr
+If you don't want them, feel free to uninstall them using this command:
+sudo apt-get remove jq git rtl-sdr
 
-echo "--------------------------------"
-echo "We're done! Here are some final messages, read them carefully:"
-echo "We've installed these packages, and we think they may be useful for you in the future. So we will leave them installed:"
-echo "jq, git, rtl-sdr"
-echo "If you don't want them, feel free to uninstall them using this command:"
-echo "sudo apt-get remove jq git rtl-sdr"
-echo ""
-echo "We have also installed chrony as NTP (time updating) client on your system. This has probably replaced any other NTP client you may have been using."
-echo "We're using chrony because this has proven to be the most stable way of keeping your system clock up to date, which is imperative for our containers to work properly."
-echo ""
-echo "--------------------------------"
-echo "To make sure that everything works OK, you should reboot your machine."
-echo "Once rebooted, you are ready to go! For safety reasons, we won't do the reboot for you, but you can do it manually by typing:"
-echo ""
-echo "sudo reboot"
-echo ""
-echo "WARNING - if you are connected remotely to a Raspberry Pi (via SSH or VNC)"
-echo "make sure you unplug any externally powered USB devices or hubs before rebooting"
-echo "because these may cause your Raspberry Pi to get stuck in the \"off\" state!"
-echo ""
-echo "--------------------------------"
-echo "That is all -- thanks for using our docker-install script. You are now ready to create docker-compose.yml files and start running containers!"
+We have also installed chrony as NTP (time updating) client on your system. This has probably replaced any other NTP client you may have been using.
+We're using chrony because this has proven to be the most stable way of keeping your system clock up to date, which is imperative for our containers to work properly.
+
+--------------------------------
+To make sure that everything works OK, you should reboot your machine.
+Once rebooted, you are ready to go! For safety reasons, we won't do the reboot for you, but you can do it manually by typing:
+
+sudo reboot
+
+WARNING - if you are connected remotely to a Raspberry Pi (via SSH or VNC)
+make sure you unplug any externally powered USB devices or hubs before rebooting
+because these may cause your Raspberry Pi to get stuck in the \"off\" state!
+
+--------------------------------
+That is all -- thanks for using our docker-install script. You are now ready to create docker-compose.yml files and start running containers!
+EOM
