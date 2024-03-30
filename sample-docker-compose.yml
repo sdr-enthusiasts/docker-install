@@ -278,7 +278,6 @@ services:
       - /run:exec,size=64M
       - /var/log
 
- 
   radarvirtuel:
 # radarvirtuel feeds ADS-B and UAT data (from ultrafeeder) to RadarVirtuel.
     image: ghcr.io/sdr-enthusiasts/docker-radarvirtuel
@@ -307,7 +306,7 @@ services:
       
   planewatch:
 # planewatch feeds ADS-B and UAT data (from ultrafeeder) to Plane.Watch.
-    image: planewatch/plane-watch
+    image: ghcr.io/plane-watch/docker-plane-watch
 #    profiles:
 #      - donotstart
     tty: true
