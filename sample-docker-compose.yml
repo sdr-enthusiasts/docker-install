@@ -674,7 +674,7 @@ services:
       # - /opt/shipxplorer/cpuinfo/cpuinfo:/proc/cpuinfo # only for x86 systems - see README.md
 
   vesselalert:
-    image: ghcr.io/sdr-enthusiasts/vesselalert
+    image: ghcr.io/sdr-enthusiasts/docker-vesselalert
     container_name: vesselalert
     hostname: vesselalert
     restart: always
