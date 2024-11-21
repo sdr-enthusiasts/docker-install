@@ -13,8 +13,7 @@ FEEDER_HEYWHATSTHAT_ALTS=<desired theoretical range altitudes>
 # SDR parameters:
 # for ADSB:
 ADSB_SDR_SERIAL=<your SDR serial>
-ADSB_SDR_GAIN=<your desired gain, or autogain>
-ADSB_SDR_PPM=<your PPM value-omit if using a SRD with TCXO>
+ADSB_SDR_PPM=<your PPM value-omit if using a SDR with TCXO>
 # for UAT:
 UAT_SDR_SERIAL="sdr-serial-number"
 UAT_SDR_GAIN=autogain
