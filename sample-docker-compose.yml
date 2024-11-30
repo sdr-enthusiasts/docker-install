@@ -136,7 +136,7 @@ services:
       - /opt/adsb/ultrafeeder/globe_history:/var/globe_history
       - /opt/adsb/ultrafeeder/graphs1090:/var/lib/collectd
       - /proc/diskstats:/proc/diskstats:ro
-      - /dev:/dev:ro
+      - /dev/bus/usb:/dev/bus/usb
     tmpfs:
       - /run:exec,size=256M
       - /tmp:size=128M
@@ -170,7 +170,7 @@ services:
       - 9275:9273
     volumes:
       - /opt/adsb/dump978/autogain:/run/autogain
-      - /dev:/dev:ro
+      - /dev/bus/usb:/dev/bus/usb
     tmpfs:
       - /run/readsb
 
@@ -433,7 +433,7 @@ services:
 #      - ICECAST_CUSTOMCONFIG=true
     volumes:
       - /opt/adsb/rtlsdr-airband:/run/rtlsdr-airband 
-      - /dev:/dev:ro
+      - /dev/bus/usb:/dev/bus/usb
 
 ######################################################################################################################################
 # Additional aircraft related containers: ACARS/VDLM
@@ -463,7 +463,7 @@ services:
       - OUTPUT_SERVER_PORT=5550
       - FEED_ID=${ACARS_FEEDER_ID}
     volumes:
-      - /dev:/dev:rw
+      - /dev/bus/usb:/dev/bus/usb
     tmpfs:
       - /run:exec,size=64M
       - /var/log
@@ -489,7 +489,7 @@ services:
       - QUIET_LOGS=FALSE
       - SERVER=
     volumes:
-      - /dev:/dev:ro
+      - /dev/bus/usb:/dev/bus/usb
     tmpfs:
       - /run:exec,size=64M
       - /var/log
@@ -669,7 +669,7 @@ services:
       - "/etc/localtime:/etc/localtime:ro"
       - "/etc/timezone:/etc/timezone:ro"
       - "/opt/ais/shipxplorer/data:/data"
-      - /dev:/dev:rw
+      - /dev/bus/usb:/dev/bus/usb
       # - /opt/shipxplorer/cpuinfo/cpuinfo:/proc/cpuinfo # only for x86 systems - see README.md
 
   vesselalert:
@@ -724,7 +724,7 @@ services:
     #   - donotstart
     container_name: ais2adsb
     hostname: ais2adsb
-    restart: unless-stopped
+    restart: always
     environment:
        - SBS_TARGET_HOST=vrs
        - SBS_TARGET_PORT=49001  # adapt this to the VRS port you set up
@@ -739,7 +739,7 @@ services:
   vnstat:
     image: vergoh/vnstat
     container_name: vnstat
-    restart: unless-stopped
+    restart: always
     network_mode: "host"
     ports:
        - 8685:8685
