@@ -2,7 +2,7 @@
 # This sample docker-compose.yml file contains example service definitions for many of the SDR-Enthusiasts containers
 # It works in combination with a ".env" file, which contains some of the variables referred to in this file.
 # The general assumption is that both this "docker-compose.yml" file and the accompanying ".env" file will be
-# stored in /opt/adsb. If you use a different directory, you may need to adjust some of the volume definitions. 
+# stored in /opt/adsb. If you use a different directory, you may need to adjust some of the volume definitions.
 #
 # Copyright 2021-2023 Ramon F. Kolb (kx1t) - licensed under the terms and conditions
 # of the MIT license. The terms and conditions of this license are included with the Github
@@ -33,7 +33,6 @@ services:
 # Note - remove "adsb,dump978,37981,raw_in;" from the ULTRAFEEDER_CONFIG parameter if your station doesn't support UAT.
 
     image: ghcr.io/sdr-enthusiasts/docker-adsb-ultrafeeder
-    tty: true
     container_name: ultrafeeder
     hostname: ultrafeeder
     restart: unless-stopped
@@ -91,7 +90,7 @@ services:
       # If you are in the Netherlands or close to its borders, please add the following aggregator:
       #    adsb,feed.hetluchtruim.nl,9000,beast_reduce_plus_out;
       #
-      # If you really want to feed ADSBExchange, you can do so by adding this above: 
+      # If you really want to feed ADSBExchange, you can do so by adding this above:
       #        adsb,feed1.adsbexchange.com,30004,beast_reduce_plus_out,uuid=${ADSBX_UUID};
       #        mlat,feed.adsbexchange.com,31090,39005,uuid=${ADSBX_UUID};
       # (the ",uuid=${ADSBX_UUID}" part is optional)
@@ -125,7 +124,7 @@ services:
       - GRAPHS1090_DARKMODE=true
       # - ENABLE_978=yes
       # - URL_978=http://dump978/skyaware978
-      # 
+      #
       # --------------------------------------------------
       # Prometheus and InfluxDB connection parameters:
       - INFLUXDBV2_URL=${INFLUX_URL}
@@ -141,13 +140,12 @@ services:
       - /run:exec,size=256M
       - /tmp:size=128M
       - /var/log:size=32M
-     
+
   dump978:
 # dump978 gets UAT data from the SDR
     image: ghcr.io/sdr-enthusiasts/docker-dump978
 #    profiles:
 #      - donotstart
-    tty: true
     container_name: dump978
     hostname: dump978
     restart: always
@@ -186,12 +184,11 @@ services:
 # ADSBHub (ADSB Hub)
 
   piaware:
-# piaware feeds ADS-B and UAT data (from ultrafeeder) to FlightAware. It also includes a GUI Radar website and a status website   
+# piaware feeds ADS-B and UAT data (from ultrafeeder) to FlightAware. It also includes a GUI Radar website and a status website
 # If you're not capturing UAT data with the dump978 container, remove or comment out the UAT_RECEIVER_TYPE and UAT_RECEIVER_HOST lines in the environment section below.
     image: ghcr.io/sdr-enthusiasts/docker-piaware
 #    profiles:
 #      - donotstart
-    tty: true
     container_name: piaware
     hostname: piaware
     restart: always
@@ -220,7 +217,6 @@ services:
     image: ghcr.io/sdr-enthusiasts/docker-flightradar24
 #    profiles:
 #      - donotstart
-    tty: true
     container_name: fr24
     hostname: fr24
     restart: always
@@ -237,11 +233,10 @@ services:
       - /var/log
 
   pfclient:
-# pfclient feeds ADS-B and UAT data (from ultrafeeder) to Plane Finder. It also includes a GUI Radar website and a status website  
+# pfclient feeds ADS-B and UAT data (from ultrafeeder) to Plane Finder. It also includes a GUI Radar website and a status website
     image: ghcr.io/sdr-enthusiasts/docker-planefinder:latest
 #    profiles:
 #      - donotstart
-    tty: true
     container_name: pfclient
     restart: always
     ports:
@@ -259,7 +254,6 @@ services:
     image: ghcr.io/sdr-enthusiasts/docker-radarbox
 #    profiles:
 #      - donotstart
-    tty: true
     container_name: rbfeeder
     hostname: rbfeeder
     restart: always
@@ -282,7 +276,6 @@ services:
     image: ghcr.io/sdr-enthusiasts/docker-radarvirtuel
 #    profiles:
 #      - donotstart
-    tty: true
     container_name: radarvirtuel
     hostname: radarvirtuel
     restart: always
@@ -302,13 +295,12 @@ services:
     volumes:
       - "/etc/localtime:/etc/localtime:ro"
       - "/etc/timezone:/etc/timezone:ro"
-      
+
   planewatch:
 # planewatch feeds ADS-B and UAT data (from ultrafeeder) to Plane.Watch.
     image: ghcr.io/plane-watch/docker-plane-watch
 #    profiles:
 #      - donotstart
-    tty: true
     container_name: planewatch
     hostname: planewatch
     restart: always
@@ -325,35 +317,33 @@ services:
     tmpfs:
       - /run:exec,size=64M
       - /var/log
-  
-  
+
+
   adsbhub:
 # adsbhub feeds ADS-B and UAT data (from ultrafeeder) to ADSB Hub.
     image: ghcr.io/sdr-enthusiasts/docker-adsbhub
 #    profiles:
 #      - donotstart
-    tty: true
     container_name: adsbhub
     restart: always
     environment:
       - TZ=${FEEDER_TZ}
       - SBSHOST=ultrafeeder
-      - CLIENTKEY=${ADSBHUB_STATION_KEY}  
-  
- 
+      - CLIENTKEY=${ADSBHUB_STATION_KEY}
+
+
 ######################################################################################################################################
 # ADS-B Visualization Services. These containers create pretty web pages from ADSB/UAT data that your station receives.
 # Containers include:
 # planefence (monitor planes nearby your station and planes from a "special" watchlist)
-# screenshot (auxilary container used with planefence -- only runs well on Pi4)
+# screenshot (auxiliary container used with planefence -- only runs well on Pi4)
 # vrs: Virtual Radar Server
- 
+
   planefence:
 # Note - after initial startup, please edit /opt/adsb/planefence/config/planefence.config. Then restart this container.
     image: ghcr.io/sdr-enthusiasts/docker-planefence
 #    profiles:
 #      - donotstart
-    tty: true
     container_name: planefence
     hostname: planefence
     restart: always
@@ -372,7 +362,6 @@ services:
     image: ghcr.io/kx1t/screenshot
 #    profiles:
 #      - donotstart
-    tty: true
     container_name: screenshot
     hostname: screenshot
     restart: always
@@ -388,7 +377,6 @@ services:
     image: ghcr.io/sdr-enthusiasts/vrs:dev
 #    profiles:
 #       - do_not_start
-    tty: true
     container_name: vrs
     hostname: vrs
     restart: always
@@ -421,7 +409,6 @@ services:
     image: ghcr.io/sdr-enthusiasts/docker-rtlsdrairband:latest_nohealthcheck
 #    profiles:
 #      - donotstart
-    tty: true
     container_name: airband
     restart: always
     device_cgroup_rules:
@@ -432,7 +419,7 @@ services:
       - RTLSDRAIRBAND_CUSTOMCONFIG=true
 #      - ICECAST_CUSTOMCONFIG=true
     volumes:
-      - /opt/adsb/rtlsdr-airband:/run/rtlsdr-airband 
+      - /opt/adsb/rtlsdr-airband:/run/rtlsdr-airband
       - /dev/bus/usb:/dev/bus/usb
 
 ######################################################################################################################################
@@ -449,7 +436,6 @@ services:
     image: ghcr.io/sdr-enthusiasts/docker-acarsdec:latest
 #    profiles:
 #      - donotstart
-    tty: true
     container_name: acarsdec
     restart: always
     device_cgroup_rules:
@@ -467,12 +453,11 @@ services:
     tmpfs:
       - /run:exec,size=64M
       - /var/log
-      
+
   dumpvdl2:
     image: ghcr.io/sdr-enthusiasts/docker-dumpvdl2:latest
 #    profiles:
 #      - donotstart
-    tty: true
     container_name: dumpvdl2
     restart: always
     device_cgroup_rules:
@@ -498,7 +483,6 @@ services:
     image: ghcr.io/sdr-enthusiasts/acars_router:latest
 #    profiles:
 #      - donotstart
-    tty: true
     container_name: acars_router
     restart: always
     environment:
@@ -519,7 +503,6 @@ services:
     image: ghcr.io/sdr-enthusiasts/docker-acarshub:latest
 #    profiles:
 #      - donotstart
-    tty: true
     container_name: acarshub
     hostname: acarshub
     restart: always
@@ -544,14 +527,13 @@ services:
 # WebProxy translates unfriendly URLs like http://x.x.x.x:8091 into friendly URLs like http://x.x.x.x/acarshub
 # It also provides GeoIP filtering and Bot Filtering
 # Although it's possible (and easy) to add SSL connectivity for websites that are exposed to the Internet,
-# the setup below doesn't include this. 
+# the setup below doesn't include this.
 # Additionally, you can host your own web pages in this directory: /opt/adsb/webproxy/html
 
   webproxy:
     image: ghcr.io/sdr-enthusiasts/docker-reversewebproxy
 #    profiles:
 #      - donotstart
-    tty: true
     container_name: webproxy
     hostname: webproxy
     restart: always
@@ -609,7 +591,7 @@ services:
 ######################################################################################################################################
 # AIS (Ship and Vessel related reporting)
 # shipfeeder :    decode AIS signals at 162 MHz and send them to aggregators including
-#                 ShipXplorer, airframes.io, HPRadar, VesselTracker, VesselFinder, MarineTraffic, aprs.fi, etc. 
+#                 ShipXplorer, airframes.io, HPRadar, VesselTracker, VesselFinder, MarineTraffic, aprs.fi, etc.
 # VesselAlert:    send Mastodon and Discord notification about ships heard
 # screenshot-ais: add-on to VesselAlert to include screenshots in the notification
 # ais2adsb:       add-on to ShipXplorer and VirtualRadarServer to show ships on the VRS map.
@@ -705,7 +687,6 @@ services:
 
   ais-screenshot:
     image: ghcr.io/sdr-enthusiasts/screenshot:aiscatcher
-    tty: true
     container_name: ais-screenshot
     hostname: ais-screenshot
     restart: always
@@ -729,7 +710,7 @@ services:
        - SBS_TARGET_HOST=vrs
        - SBS_TARGET_PORT=49001  # adapt this to the VRS port you set up
        - INCLUDE_SHIPS=true   # leave empty to forward only SAR aircraft
- 
+
 ######################################################################################################################################
 # Finally, a few "maintenance" containers that keep the rest of the stack healthy and up to date:
 # vnstat: shows network usage on a per interface (global and per container) basis
@@ -755,11 +736,10 @@ services:
        - CACHE_TIME=1
        - RATE_UNIT=0
        - PAGE_REFRESH=0
-       - SERVER_NAME="ADSB Station IO Stats"     
-      
+       - SERVER_NAME="ADSB Station IO Stats"
+
   autoheal:
     image: willfarrell/autoheal
-    tty: true
     container_name: autoheal
     hostname: autoheal
     restart: always
@@ -767,10 +747,9 @@ services:
       - AUTOHEAL_CONTAINER_LABEL=all
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
-  
+
   watchtower:
     image: containrrr/watchtower
-    tty: true
     container_name: watchtower
     hostname: watchtower
     restart: always
