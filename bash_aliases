@@ -9,6 +9,7 @@ alias usboff='grep "Raspberry Pi 4" /sys/firmware/devicetree/base/model >/dev/nu
 alias usbon='grep "Raspberry Pi 4" /sys/firmware/devicetree/base/model >/dev/null 2>&1 && sudo uhubctl -a on -l 1-1 || echo "Sorry, this is only available on Raspberry Pi 4"'
 alias usbstatus='grep "Raspberry Pi 4" /sys/firmware/devicetree/base/model >/dev/null 2>&1 && sudo uhubctl || echo "Sorry, this is only available on Raspberry Pi 4"'
 alias usbtoggle='grep "Raspberry Pi 4" /sys/firmware/devicetree/base/model >/dev/null 2>&1 && sudo uhubctl -a toggle -l 1-1 || echo "Sorry, this is only available on Raspberry Pi 4"'
+alias dive="docker run -ti --rm  -v /var/run/docker.sock:/var/run/docker.sock wagoodman/dive"
 
 export DOCKER_HOST="unix:///var/run/docker.sock"
 
@@ -91,3 +92,5 @@ function transfer() {
         fi
         echo
 }
+
+function dupall() { for d in /opt/*; do if [[ -f "$d/docker-compose.yml" ]]; then pushd "$d"; dup; popd; fi; done; }
