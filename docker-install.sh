@@ -234,10 +234,7 @@ then
 else
     echo "not found!"
     echo "Installing docker, each step may take a while:"
-    echo -n "Getting docker..."
-    curl -fsSL https://get.docker.com -o get-docker.sh
-    echo "Installing Docker... "
-    sudo sh get-docker.sh
+    curl -fsSL https://get.docker.com | sudo sh
     echo "Docker installed -- configuring docker..."
     sudo usermod -aG docker "${USER}"
     sudo mkdir -p /etc/docker
@@ -300,9 +297,6 @@ else
       echo "Docker-compose was not installed correctly - you may need to do this manually."
     fi
 fi
-
-# clean up the "get-docker.sh" script if it's still there:
-rm -f get-docker.sh
 
 # Now make sure that libseccomp2 >= version 2.4. This is necessary for Bullseye-based containers
 # This is often an issue on Buster and Stretch-based host systems with 32-bits Rasp Pi OS installed pre-November 2021.
