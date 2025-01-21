@@ -403,7 +403,7 @@ if [[ -f /etc/dhcpcd.conf ]] && ! grep "denyinterfaces veth\*" /etc/dhcpcd.conf 
 then
   echo -n "Excluding veth interfaces from dhcp. This will prevent problems if you are connected to the internet via WiFi when running many Docker containers... "
   sudo sh -c 'echo "denyinterfaces veth*" >> /etc/dhcpcd.conf'
-  sudo systemctl restart dhcpcd.service
+  sudo systemctl is-enabled dhcpcd.service && sudo systemctl restart dhcpcd.service
   echo "done!"
 fi
 
