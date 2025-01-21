@@ -395,7 +395,7 @@ if [[ "${text,,}" != "n" ]]; then
     fi
 fi
 echo "Making sure commands will persist when the terminal closes..."
-sudo loginctl enable-linger "$(whoami)" >/dev/null 2>&1
+sudo loginctl enable-linger "$(whoami)" >/dev/null 2>&1 || true
 #
 # The following prevents DHCPCD based systems from trying to assign IP addresses to each of the Docker containers.
 # Note that this is not needed or available if the system uses DHCPD instead of DHCPCD.
@@ -416,7 +416,7 @@ fi
 
 echo "Adding a crontab entry to ensure your system stays clean"
 file="$(mktemp)"
-crontab -l > "$file"
+crontab -l > "$file" || true
 { echo '#'
   echo '# Delete all unused containers (except those labeled do_not_prune) nightly at 3 AM'
   echo '# For example, docker-baseimage:rtlsdr is marked do_not_prune because it is used as a bash alias in rtl_test'
