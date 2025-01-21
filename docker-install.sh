@@ -8,6 +8,7 @@
 # Licensed under the terms and conditions of the MIT license.
 # https://github.com/sdr-enthusiasts/docker-install/main/LICENSE
 #
+trap 'echo "[ERROR] Error in line $LINENO when executing: $BASH_COMMAND"' ERR
 # ------------------------------------------------------------------------------------------
 # VARIABLE DEFINITIONS:
 # These are the supported architectures for SDR-enthusiasts docker containers
