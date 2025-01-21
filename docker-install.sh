@@ -8,6 +8,7 @@
 # Licensed under the terms and conditions of the MIT license.
 # https://github.com/sdr-enthusiasts/docker-install/main/LICENSE
 #
+trap 'echo "[ERROR] Error in line $LINENO when executing: $BASH_COMMAND"' ERR
 # ------------------------------------------------------------------------------------------
 # VARIABLE DEFINITIONS:
 # These are the supported architectures for SDR-enthusiasts docker containers
@@ -233,10 +234,7 @@ then
 else
     echo "not found!"
     echo "Installing docker, each step may take a while:"
-    echo -n "Getting docker..."
-    curl -fsSL https://get.docker.com -o get-docker.sh
-    echo "Installing Docker... "
-    sudo sh get-docker.sh
+    curl -fsSL https://get.docker.com | sudo sh
     echo "Docker installed -- configuring docker..."
     sudo usermod -aG docker "${USER}"
     sudo mkdir -p /etc/docker
@@ -281,13 +279,18 @@ EOF
     fi
 fi
 
+echo "Adding some handy aliases to your bash shell. You can find them by typing \"cat ~/.sdre_aliases\""
+curl -sSL "https://raw.githubusercontent.com/sdr-enthusiasts/docker-install/main/bash_aliases" > ~/.sdre_aliases
+grep -qs sdre_aliases ~/.bashrc || echo "source ~/.sdre_aliases" >> ~/.bashrc
+source ~/.sdre_aliases
+
 echo -n "Checking for Docker Compose installation... "
 if which docker-compose >/dev/null 2>&1; then
     echo "found! No need to install..."
 elif docker compose version >/dev/null 2>&1; then
     echo "Docker Compose plugin found. Creating an alias to it for \"docker-compose \"..."
-    echo "alias docker-compose=\"docker compose\"" >> ~/.bash_aliases
-    source ~/.bash_aliases
+    echo "alias docker-compose=\"docker compose\"" >> ~/.sdre_aliases
+    source ~/.sdre_aliases
 else
     echo "not found!"
     echo "Installing Docker compose... "
@@ -299,9 +302,6 @@ else
       echo "Docker-compose was not installed correctly - you may need to do this manually."
     fi
 fi
-
-# clean up the "get-docker.sh" script if it's still there:
-rm -f get-docker.sh
 
 # Now make sure that libseccomp2 >= version 2.4. This is necessary for Bullseye-based containers
 # This is often an issue on Buster and Stretch-based host systems with 32-bits Rasp Pi OS installed pre-November 2021.
@@ -395,7 +395,7 @@ if [[ "${text,,}" != "n" ]]; then
     fi
 fi
 echo "Making sure commands will persist when the terminal closes..."
-sudo loginctl enable-linger "$(whoami)" >/dev/null 2>&1
+sudo loginctl enable-linger "$(whoami)" >/dev/null 2>&1 || true
 #
 # The following prevents DHCPCD based systems from trying to assign IP addresses to each of the Docker containers.
 # Note that this is not needed or available if the system uses DHCPD instead of DHCPCD.
@@ -403,7 +403,7 @@ if [[ -f /etc/dhcpcd.conf ]] && ! grep "denyinterfaces veth\*" /etc/dhcpcd.conf 
 then
   echo -n "Excluding veth interfaces from dhcp. This will prevent problems if you are connected to the internet via WiFi when running many Docker containers... "
   sudo sh -c 'echo "denyinterfaces veth*" >> /etc/dhcpcd.conf'
-  sudo systemctl restart dhcpcd.service
+  sudo systemctl is-enabled dhcpcd.service && sudo systemctl restart dhcpcd.service
   echo "done!"
 fi
 
@@ -414,14 +414,9 @@ then
   sudo sed -i 's/^\(127.0.0.1\s*localhost\)\(.*\)/\1\2 localunixsocket localunixsocket.local localunixsocket.home/g' /etc/hosts
 fi
 
-echo "Adding some handy aliases to your bash shell. You can find them by typing \"cat ~/.bash_aliases\""
-curl -sSL "https://raw.githubusercontent.com/sdr-enthusiasts/docker-install/main/bash_aliases" >> ~/.bash_aliases
-echo "source ~/.bash_aliases" >> ~/.bashrc
-source ~/.bash_aliases
-
 echo "Adding a crontab entry to ensure your system stays clean"
 file="$(mktemp)"
-crontab -l > "$file"
+crontab -l > "$file" || true
 { echo '#'
   echo '# Delete all unused containers (except those labeled do_not_prune) nightly at 3 AM'
   echo '# For example, docker-baseimage:rtlsdr is marked do_not_prune because it is used as a bash alias in rtl_test'
