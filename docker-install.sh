@@ -279,13 +279,18 @@ EOF
     fi
 fi
 
+echo "Adding some handy aliases to your bash shell. You can find them by typing \"cat ~/.sdre_aliases\""
+curl -sSL "https://raw.githubusercontent.com/sdr-enthusiasts/docker-install/main/bash_aliases" > ~/.sdre_aliases
+grep -qs sdre_aliases ~/.bashrc || echo "source ~/.sdre_aliases" >> ~/.bashrc
+source ~/.sdre_aliases
+
 echo -n "Checking for Docker Compose installation... "
 if which docker-compose >/dev/null 2>&1; then
     echo "found! No need to install..."
 elif docker compose version >/dev/null 2>&1; then
     echo "Docker Compose plugin found. Creating an alias to it for \"docker-compose \"..."
-    echo "alias docker-compose=\"docker compose\"" >> ~/.bash_aliases
-    source ~/.bash_aliases
+    echo "alias docker-compose=\"docker compose\"" >> ~/.sdre_aliases
+    source ~/.sdre_aliases
 else
     echo "not found!"
     echo "Installing Docker compose... "
@@ -408,11 +413,6 @@ then
   echo "Speeding up the recreation of containers when using docker-compose..."
   sudo sed -i 's/^\(127.0.0.1\s*localhost\)\(.*\)/\1\2 localunixsocket localunixsocket.local localunixsocket.home/g' /etc/hosts
 fi
-
-echo "Adding some handy aliases to your bash shell. You can find them by typing \"cat ~/.bash_aliases\""
-curl -sSL "https://raw.githubusercontent.com/sdr-enthusiasts/docker-install/main/bash_aliases" >> ~/.bash_aliases
-echo "source ~/.bash_aliases" >> ~/.bashrc
-source ~/.bash_aliases
 
 echo "Adding a crontab entry to ensure your system stays clean"
 file="$(mktemp)"
