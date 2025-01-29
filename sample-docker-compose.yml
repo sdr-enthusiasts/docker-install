@@ -35,7 +35,7 @@ services:
     image: ghcr.io/sdr-enthusiasts/docker-adsb-ultrafeeder
     container_name: ultrafeeder
     hostname: ultrafeeder
-    restart: unless-stopped
+    restart: always
     device_cgroup_rules:
       - 'c 189:* rwm'
     ports:
@@ -75,14 +75,16 @@ services:
           adsb,skyfeed.hpradar.com,30004,beast_reduce_plus_out;
           adsb,feed.radarplane.com,30001,beast_reduce_plus_out;
           adsb,dati.flyitalyadsb.com,4905,beast_reduce_plus_out;
-          mlat,feed.adsb.fi,31090,39000;
-          mlat,in.adsb.lol,31090,39001;
-          mlat,feed.airplanes.live,31090,39002;
-          mlat,mlat.planespotters.net,31090,39003;
-          mlat,feed.theairtraffic.com,31090,39004;
-          mlat,skyfeed.hpradar.com,31090,39005;
-          mlat,feed.radarplane.com,31090,39006;
-          mlat,dati.flyitalyadsb.com,30100,39007;
+          adsb,feed1.adsbexchange.com,30004,beast_reduce_plus_out;
+          mlat,feed.adsb.fi,31090;
+          mlat,in.adsb.lol,31090;
+          mlat,feed.airplanes.live,31090;
+          mlat,mlat.planespotters.net,31090;
+          mlat,feed.theairtraffic.com,31090;
+          mlat,skyfeed.hpradar.com,31090;
+          mlat,feed.radarplane.com,31090;
+          mlat,dati.flyitalyadsb.com,30100;
+          mlat,feed.adsbexchange.com,31090;
           mlathub,piaware,30104,beast_in;
           mlathub,airnavradar,30105,beast_in;
           mlathub,radarvirtuel,30105,beast_in;
@@ -91,9 +93,7 @@ services:
       #    adsb,feed.hetluchtruim.nl,9000,beast_reduce_plus_out;
       #
       # If you really want to feed ADSBExchange, you can do so by adding this above:
-      #        adsb,feed1.adsbexchange.com,30004,beast_reduce_plus_out,uuid=${ADSBX_UUID};
-      #        mlat,feed.adsbexchange.com,31090,39005,uuid=${ADSBX_UUID};
-      # (the ",uuid=${ADSBX_UUID}" part is optional)
+      #              # (the ",uuid=${ADSBX_UUID}" part is optional)
       #
       # --------------------------------------------------
       - UUID=${ULTRAFEEDER_UUID}
@@ -127,10 +127,12 @@ services:
       #
       # --------------------------------------------------
       # Prometheus and InfluxDB connection parameters:
-      - INFLUXDBV2_URL=${INFLUX_URL}
-      - INFLUXDBV2_TOKEN=${INFLUX_TOKEN}
-      - INFLUXDBV2_BUCKET=${INFLUX_BUCKET}
-      - PROMETHEUS_ENABLE=true
+      # If you enable these, you must vent the image: line above to #
+      #  image: ghcr.io/sdr-enthusiasts/docker-adsb-ultrafeeder:telegraf
+      # - INFLUXDBV2_URL=${INFLUX_URL}
+      # - INFLUXDBV2_TOKEN=${INFLUX_TOKEN}
+      # - INFLUXDBV2_BUCKET=${INFLUX_BUCKET}
+      # - PROMETHEUS_ENABLE=true
     volumes:
       - /opt/adsb/ultrafeeder/globe_history:/var/globe_history
       - /opt/adsb/ultrafeeder/graphs1090:/var/lib/collectd
