@@ -85,7 +85,7 @@ services:
           mlat,feed.radarplane.com,31090;
           mlat,dati.flyitalyadsb.com,30100;
           mlat,feed.adsbexchange.com,31090;
-          mlathub,piaware,30104,beast_in;
+          mlathub,piaware,30105,beast_in;
           mlathub,airnavradar,30105,beast_in;
           mlathub,radarvirtuel,30105,beast_in;
           mlathub,planewatch,30105,beast_in;
