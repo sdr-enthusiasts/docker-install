@@ -279,6 +279,8 @@ EOF
     fi
 fi
 
+grep -qs COMPOSE_BAKE ~/.bashrc || echo "export COMPOSE_BAKE=true" >> ~/.bashrc
+
 echo "Adding some handy aliases to your bash shell. You can find them by typing \"cat ~/.sdre_aliases\""
 curl -sSL "https://raw.githubusercontent.com/sdr-enthusiasts/docker-install/main/bash_aliases" > ~/.sdre_aliases
 grep -qs sdre_aliases ~/.bashrc || echo "source ~/.sdre_aliases" >> ~/.bashrc
