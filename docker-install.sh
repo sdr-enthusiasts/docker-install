@@ -30,7 +30,7 @@ APT_INSTALLS+=(ca-certificates)
 APT_INSTALLS+=(curl)
 APT_INSTALLS+=(gnupg2)
 APT_INSTALLS+=(slirp4netns)
-APT_INSTALLS+=(software-properties-common)
+#APT_INSTALLS+=(software-properties-common)
 APT_INSTALLS+=(uidmap)
 APT_INSTALLS+=(w3m)
 APT_INSTALLS+=(jq)
@@ -38,7 +38,7 @@ APT_INSTALLS+=(git)
 APT_INSTALLS+=(rtl-sdr)
 APT_INSTALLS+=(chrony)
 if grep "Raspberry Pi 4" /sys/firmware/devicetree/base/model >/dev/null 2>&1; then APT_INSTALLS+=(uhubctl); fi
-if ! grep "bookworm" /etc/os-release >/dev/null 2>&1; then APT_INSTALLS+=(netcat); else APT_INSTALLS+=(netcat-openbsd); fi
+if ! grep "bookworm\|trixie" /etc/os-release >/dev/null 2>&1; then APT_INSTALLS+=(netcat); else APT_INSTALLS+=(netcat-openbsd); fi
 #
 # This is the list of SDR modules/drivers that need to get excluded 
 # Please keep the list in this order and add any additional ones to the BOTTOM
@@ -53,7 +53,7 @@ BLOCKED_MODULES+=("rtl2838")
 BLOCKED_MODULES+=("dvb_core")
 #
 # Recommended Debian version:
-RECOMMENDED_DEBIAN=("12 (bookworm)")  # standard Debian version name. This is the one that will show as recommended
+RECOMMENDED_DEBIAN=("13 (trixie)")  # standard Debian version name. This is the one that will show as recommended
 RECOMMENDED_DEBIAN+=("22.04") # Ubuntu current LTS release
 RECOMMENDED_DEBIAN+=("23.04") # Ubuntu current normal release
 RECOMMENDED_DEBIAN+=("23.10") # Ubuntu current normal release
