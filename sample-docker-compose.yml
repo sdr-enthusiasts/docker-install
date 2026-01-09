@@ -751,7 +751,7 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
 
   watchtower:
-    image: containrrr/watchtower
+    image: nickfedor/watchtower
     container_name: watchtower
     hostname: watchtower
     restart: always
