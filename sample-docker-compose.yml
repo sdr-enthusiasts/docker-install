@@ -11,36 +11,36 @@
 ######################################################################################################################################
 
 services:
-######################################################################################################################################
-# ADS-B/UAT Data Processing Services. These containers read data from dongles and/or other containers and decode or process this data.
-# Containers include:
-# ultrafeeder
-# dump978
-#
-# In order to temporarily suspend a container and prevent it from starting, uncomment this from each container definition:
-# #    profiles:
-# #      - donotstart
+  ######################################################################################################################################
+  # ADS-B/UAT Data Processing Services. These containers read data from dongles and/or other containers and decode or process this data.
+  # Containers include:
+  # ultrafeeder
+  # dump978
+  #
+  # In order to temporarily suspend a container and prevent it from starting, uncomment this from each container definition:
+  # #    profiles:
+  # #      - donotstart
 
   ultrafeeder:
-  # ultrafeeder combines a number of functions:
-  # - it retrieves and decodes 1090MHz Mode A/C/S data from the SDR(s) using Wiedehopf's branch of readsb
-  # - it implements a `tar1090` based map on port 80 (mapped to port 8080 on the host)
-  # - it includes graph1090 (system statistics website) on http://xxxxx/graphs1090
-  # - it sends ADSB data directly (without the need of additional containers) to the
-  #   "new" aggregators, and, if desired, also to AdsbExchange
-  # - it includes mlat-client to send MLAT data to these aggregators
-  # - it includes an MLAT Hub to consolidate MLAT results and make them available to the built-in map and other services
-# Note - remove "adsb,dump978,37981,raw_in;" from the ULTRAFEEDER_CONFIG parameter if your station doesn't support UAT.
+    # ultrafeeder combines a number of functions:
+    # - it retrieves and decodes 1090MHz Mode A/C/S data from the SDR(s) using Wiedehopf's branch of readsb
+    # - it implements a `tar1090` based map on port 80 (mapped to port 8080 on the host)
+    # - it includes graph1090 (system statistics website) on http://xxxxx/graphs1090
+    # - it sends ADSB data directly (without the need of additional containers) to the
+    #   "new" aggregators, and, if desired, also to AdsbExchange
+    # - it includes mlat-client to send MLAT data to these aggregators
+    # - it includes an MLAT Hub to consolidate MLAT results and make them available to the built-in map and other services
+    # Note - remove "adsb,dump978,37981,raw_in;" from the ULTRAFEEDER_CONFIG parameter if your station doesn't support UAT.
 
     image: ghcr.io/sdr-enthusiasts/docker-adsb-ultrafeeder
     container_name: ultrafeeder
     hostname: ultrafeeder
     restart: always
     device_cgroup_rules:
-      - 'c 189:* rwm'
+      - "c 189:* rwm"
     ports:
-      - 8080:80               # to expose the web interface
-      - 9273-9274:9273-9274   # to expose the statistics interface to Prometheus
+      - 8080:80 # to expose the web interface
+      - 9273-9274:9273-9274 # to expose the statistics interface to Prometheus
     environment:
       # --------------------------------------------------
       # general parameters:
@@ -65,30 +65,30 @@ services:
       # Notes - remove the entries you are not using / feeding
       #       - !!! make sure that each line ends with a semicolon ";" !!!
       - ULTRAFEEDER_CONFIG=
-          adsb,dump978,30978,uat_in;
-          adsb,feed.adsb.fi,30004,beast_reduce_plus_out;
-          adsb,in.adsb.lol,30004,beast_reduce_plus_out;
-          adsb,feed.airplanes.live,30004,beast_reduce_plus_out;
-          adsb,feed.planespotters.net,30004,beast_reduce_plus_out;
-          adsb,feed.theairtraffic.com,30004,beast_reduce_plus_out;
-          adsb,data.avdelphi.com,24999,beast_reduce_plus_out;
-          adsb,skyfeed.hpradar.com,30004,beast_reduce_plus_out;
-          adsb,feed.radarplane.com,30001,beast_reduce_plus_out;
-          adsb,dati.flyitalyadsb.com,4905,beast_reduce_plus_out;
-          adsb,feed1.adsbexchange.com,30004,beast_reduce_plus_out;
-          mlat,feed.adsb.fi,31090;
-          mlat,in.adsb.lol,31090;
-          mlat,feed.airplanes.live,31090;
-          mlat,mlat.planespotters.net,31090;
-          mlat,feed.theairtraffic.com,31090;
-          mlat,skyfeed.hpradar.com,31090;
-          mlat,feed.radarplane.com,31090;
-          mlat,dati.flyitalyadsb.com,30100;
-          mlat,feed.adsbexchange.com,31090;
-          mlathub,piaware,30105,beast_in;
-          mlathub,airnavradar,30105,beast_in;
-          mlathub,radarvirtuel,30105,beast_in;
-          mlathub,planewatch,30105,beast_in;
+        adsb,dump978,30978,uat_in;
+        adsb,feed.adsb.fi,30004,beast_reduce_plus_out;
+        adsb,in.adsb.lol,30004,beast_reduce_plus_out;
+        adsb,feed.airplanes.live,30004,beast_reduce_plus_out;
+        adsb,feed.planespotters.net,30004,beast_reduce_plus_out;
+        adsb,feed.theairtraffic.com,30004,beast_reduce_plus_out;
+        adsb,data.avdelphi.com,24999,beast_reduce_plus_out;
+        adsb,skyfeed.hpradar.com,30004,beast_reduce_plus_out;
+        adsb,feed.radarplane.com,30001,beast_reduce_plus_out;
+        adsb,dati.flyitalyadsb.com,4905,beast_reduce_plus_out;
+        adsb,feed1.adsbexchange.com,30004,beast_reduce_plus_out;
+        mlat,feed.adsb.fi,31090;
+        mlat,in.adsb.lol,31090;
+        mlat,feed.airplanes.live,31090;
+        mlat,mlat.planespotters.net,31090;
+        mlat,feed.theairtraffic.com,31090;
+        mlat,skyfeed.hpradar.com,31090;
+        mlat,feed.radarplane.com,31090;
+        mlat,dati.flyitalyadsb.com,30100;
+        mlat,feed.adsbexchange.com,31090;
+        mlathub,piaware,30105,beast_in;
+        mlathub,airnavradar,30105,beast_in;
+        mlathub,radarvirtuel,30105,beast_in;
+        mlathub,planewatch,30105,beast_in;
       # If you are in the Netherlands or close to its borders, please add the following aggregator:
       #    adsb,feed.hetluchtruim.nl,9000,beast_reduce_plus_out;
       #
@@ -144,17 +144,17 @@ services:
       - /var/log:size=32M
 
   dump978:
-# dump978 gets UAT data from the SDR
+    # dump978 gets UAT data from the SDR
     image: ghcr.io/sdr-enthusiasts/docker-dump978
-#    profiles:
-#      - donotstart
+    #    profiles:
+    #      - donotstart
     container_name: dump978
     hostname: dump978
     restart: always
     labels:
       - "autoheal=true"
     device_cgroup_rules:
-      - 'c 189:* rwm'
+      - "c 189:* rwm"
     environment:
       - TZ=${FEEDER_TZ}
       - DUMP978_RTLSDR_DEVICE=${UAT_SDR_SERIAL}
@@ -162,7 +162,7 @@ services:
       - DUMP978_SDR_PPM=${UAT_SDR_PPM}
       - LAT=${FEEDER_LAT}
       - LON=${FEEDER_LONG}
-      - ENABLE_PROMETHEUS=true  # set to true if you are configuring Prometheus/Grafana dashboards
+      - ENABLE_PROMETHEUS=true # set to true if you are configuring Prometheus/Grafana dashboards
     ports:
       - 30979:30979
       - 30978:30978
@@ -174,23 +174,23 @@ services:
     tmpfs:
       - /run/readsb
 
-######################################################################################################################################
-# ADS-B Feeder Services. These containers feed ADS-B/UAT data to aggregator services.
-# Containers include:
-# piaware (FlightAware)
-# fr24 (FlightRadar24)
-# pfclient (Planefinder)
-# airnavradar (AirNav Radar (a.k.a RadarBox))
-# radarvirtuel (RadarVirtuel)
-# planewatch (Plane.Watch)
-# ADSBHub (ADSB Hub)
+  ######################################################################################################################################
+  # ADS-B Feeder Services. These containers feed ADS-B/UAT data to aggregator services.
+  # Containers include:
+  # piaware (FlightAware)
+  # fr24 (FlightRadar24)
+  # pfclient (Planefinder)
+  # airnavradar (AirNav Radar (a.k.a RadarBox))
+  # radarvirtuel (RadarVirtuel)
+  # planewatch (Plane.Watch)
+  # ADSBHub (ADSB Hub)
 
   piaware:
-# piaware feeds ADS-B and UAT data (from ultrafeeder) to FlightAware. It also includes a GUI Radar website and a status website
-# If you're not capturing UAT data with the dump978 container, remove or comment out the UAT_RECEIVER_TYPE and UAT_RECEIVER_HOST lines in the environment section below.
+    # piaware feeds ADS-B and UAT data (from ultrafeeder) to FlightAware. It also includes a GUI Radar website and a status website
+    # If you're not capturing UAT data with the dump978 container, remove or comment out the UAT_RECEIVER_TYPE and UAT_RECEIVER_HOST lines in the environment section below.
     image: ghcr.io/sdr-enthusiasts/docker-piaware
-#    profiles:
-#      - donotstart
+    #    profiles:
+    #      - donotstart
     container_name: piaware
     hostname: piaware
     restart: always
@@ -211,14 +211,13 @@ services:
       - /run:exec,size=64M
       - /var/log
 
-
   fr24:
-# fr24 feeds ADS-B and UAT data (from ultrafeeder) to FlightRadar24. It also includes a status website. Please be careful
-# not to expose the status website to the internet as users may be able to start/stop/change the service from there.
-# Also note that FR24 has requested NOT to enable MLAT for those station that feed to multiple services; as such, it's commented out.
+    # fr24 feeds ADS-B and UAT data (from ultrafeeder) to FlightRadar24. It also includes a status website. Please be careful
+    # not to expose the status website to the internet as users may be able to start/stop/change the service from there.
+    # Also note that FR24 has requested NOT to enable MLAT for those station that feed to multiple services; as such, it's commented out.
     image: ghcr.io/sdr-enthusiasts/docker-flightradar24
-#    profiles:
-#      - donotstart
+    #    profiles:
+    #      - donotstart
     container_name: fr24
     hostname: fr24
     restart: always
@@ -230,15 +229,15 @@ services:
       - BEASTHOST=ultrafeeder
       - TZ=${FEEDER_TZ}
       - FR24KEY=${FR24_SHARING_KEY}
-#      - MLAT=yes
+    #      - MLAT=yes
     tmpfs:
       - /var/log
 
   pfclient:
-# pfclient feeds ADS-B and UAT data (from ultrafeeder) to Plane Finder. It also includes a GUI Radar website and a status website
+    # pfclient feeds ADS-B and UAT data (from ultrafeeder) to Plane Finder. It also includes a GUI Radar website and a status website
     image: ghcr.io/sdr-enthusiasts/docker-planefinder:latest
-#    profiles:
-#      - donotstart
+    #    profiles:
+    #      - donotstart
     container_name: pfclient
     restart: always
     ports:
@@ -251,11 +250,11 @@ services:
       - SHARECODE=${PLANEFINDER_SHARECODE}
 
   airnavradar:
-# airnavradar feeds ADS-B and UAT data (from ultrafeeder) to AirNav Radar.
-# If you're not capturing UAT data with the dump978 container, remove or comment out the UAT_RECEIVER_HOST line in the environment section below.
+    # airnavradar feeds ADS-B and UAT data (from ultrafeeder) to AirNav Radar.
+    # If you're not capturing UAT data with the dump978 container, remove or comment out the UAT_RECEIVER_HOST line in the environment section below.
     image: ghcr.io/sdr-enthusiasts/docker-airnavradar
-#    profiles:
-#      - donotstart
+    #    profiles:
+    #      - donotstart
     container_name: airnavradar
     hostname: airnavradar
     restart: always
@@ -274,10 +273,10 @@ services:
       - /var/log
 
   radarvirtuel:
-# radarvirtuel feeds ADS-B and UAT data (from ultrafeeder) to RadarVirtuel.
+    # radarvirtuel feeds ADS-B and UAT data (from ultrafeeder) to RadarVirtuel.
     image: ghcr.io/sdr-enthusiasts/docker-radarvirtuel
-#    profiles:
-#      - donotstart
+    #    profiles:
+    #      - donotstart
     container_name: radarvirtuel
     hostname: radarvirtuel
     restart: always
@@ -299,10 +298,10 @@ services:
       - "/etc/timezone:/etc/timezone:ro"
 
   planewatch:
-# planewatch feeds ADS-B and UAT data (from ultrafeeder) to Plane.Watch.
+    # planewatch feeds ADS-B and UAT data (from ultrafeeder) to Plane.Watch.
     image: ghcr.io/plane-watch/docker-plane-watch
-#    profiles:
-#      - donotstart
+    #    profiles:
+    #      - donotstart
     container_name: planewatch
     hostname: planewatch
     restart: always
@@ -320,12 +319,11 @@ services:
       - /run:exec,size=64M
       - /var/log
 
-
   adsbhub:
-# adsbhub feeds ADS-B and UAT data (from ultrafeeder) to ADSB Hub.
+    # adsbhub feeds ADS-B and UAT data (from ultrafeeder) to ADSB Hub.
     image: ghcr.io/sdr-enthusiasts/docker-adsbhub
-#    profiles:
-#      - donotstart
+    #    profiles:
+    #      - donotstart
     container_name: adsbhub
     restart: always
     environment:
@@ -333,19 +331,18 @@ services:
       - SBSHOST=ultrafeeder
       - CLIENTKEY=${ADSBHUB_STATION_KEY}
 
-
-######################################################################################################################################
-# ADS-B Visualization Services. These containers create pretty web pages from ADSB/UAT data that your station receives.
-# Containers include:
-# planefence (monitor planes nearby your station and planes from a "special" watchlist)
-# screenshot (auxiliary container used with planefence -- only runs well on Pi4)
-# vrs: Virtual Radar Server
+  ######################################################################################################################################
+  # ADS-B Visualization Services. These containers create pretty web pages from ADSB/UAT data that your station receives.
+  # Containers include:
+  # planefence (monitor planes nearby your station and planes from a "special" watchlist)
+  # screenshot (auxiliary container used with planefence -- only runs well on Pi4)
+  # vrs: Virtual Radar Server
 
   planefence:
-# Note - after initial startup, please edit /opt/adsb/planefence/config/planefence.config. Then restart this container.
+    # Note - after initial startup, please edit /opt/adsb/planefence/config/planefence.config. Then restart this container.
     image: ghcr.io/sdr-enthusiasts/docker-planefence
-#    profiles:
-#      - donotstart
+    #    profiles:
+    #      - donotstart
     container_name: planefence
     hostname: planefence
     restart: always
@@ -362,8 +359,8 @@ services:
 
   screenshot:
     image: ghcr.io/kx1t/screenshot
-#    profiles:
-#      - donotstart
+    #    profiles:
+    #      - donotstart
     container_name: screenshot
     hostname: screenshot
     restart: always
@@ -377,71 +374,71 @@ services:
 
   vrs:
     image: ghcr.io/sdr-enthusiasts/vrs:dev
-#    profiles:
-#       - do_not_start
+    #    profiles:
+    #       - do_not_start
     container_name: vrs
     hostname: vrs
     restart: always
     ports:
-       - 8091:8080
-       - 49000-49099:49000-49099
+      - 8091:8080
+      - 49000-49099:49000-49099
     environment:
-       - VRS_ADMIN_USERNAME=${VRS_ADMIN_USERNAME}
-       - VRS_ADMIN_PASSWORD=${VRS_ADMIN_PASSWORD}
-       - VRS_DB_UPDATE_POLICY_FULLAUTO=on
-       - VRS_CULTURE=en-US #see http://msdn.microsoft.com/en-us/goglobal/bb896001.aspx for a list of supported culture names. Not all translations may be available
-       - VRS_DB_UPDATE_POLICY_FULLAUTO=yes #default unset / no
-       - VRS_DB_UPDATE_WITH_VACUUM=yes #default unset / no
-       - VRS_DB_UPDATE_BACKUP_UNCOMPRESSED=yes #default unset / compressed
-       - VRS_ENHANCED_MARKERS=hfdl #default unset
-       - VRS_ENHANCED_LAYERS_COUNTRY=USA1 #Currently available: UK,DE,USA1,SE
+      - VRS_ADMIN_USERNAME=${VRS_ADMIN_USERNAME}
+      - VRS_ADMIN_PASSWORD=${VRS_ADMIN_PASSWORD}
+      - VRS_DB_UPDATE_POLICY_FULLAUTO=on
+      - VRS_CULTURE=en-US #see http://msdn.microsoft.com/en-us/goglobal/bb896001.aspx for a list of supported culture names. Not all translations may be available
+      - VRS_DB_UPDATE_POLICY_FULLAUTO=yes #default unset / no
+      - VRS_DB_UPDATE_WITH_VACUUM=yes #default unset / no
+      - VRS_DB_UPDATE_BACKUP_UNCOMPRESSED=yes #default unset / compressed
+      - VRS_ENHANCED_MARKERS=hfdl #default unset
+      - VRS_ENHANCED_LAYERS_COUNTRY=USA1 #Currently available: UK,DE,USA1,SE
     tmpfs:
-       - /tmp:rw,nosuid,nodev,noexec,relatime,size=128M
+      - /tmp:rw,nosuid,nodev,noexec,relatime,size=128M
     volumes:
-       - /opt/adsb/vrs:/root/.local/share/VirtualRadar
-       - "/etc/localtime:/etc/localtime:ro"
-       - "/etc/timezone:/etc/timezone:ro"
+      - /opt/adsb/vrs:/root/.local/share/VirtualRadar
+      - "/etc/localtime:/etc/localtime:ro"
+      - "/etc/timezone:/etc/timezone:ro"
 
-######################################################################################################################################
-# Additional aircraft related containers: airband
-# This container allows listening to Airband radio and feeding this data to AirNav Radar. It also creates a local Icecast station you can
-# listen to.
+  ######################################################################################################################################
+  # Additional aircraft related containers: airband
+  # This container allows listening to Airband radio and feeding this data to AirNav Radar. It also creates a local Icecast station you can
+  # listen to.
 
   airband:
     image: ghcr.io/sdr-enthusiasts/docker-rtlsdrairband:latest_nohealthcheck
-#    profiles:
-#      - donotstart
+    #    profiles:
+    #      - donotstart
     container_name: airband
     restart: always
     device_cgroup_rules:
-      - 'c 189:* rwm'
+      - "c 189:* rwm"
     ports:
       - 8000:8000
     environment:
       - RTLSDRAIRBAND_CUSTOMCONFIG=true
-#      - ICECAST_CUSTOMCONFIG=true
+    #      - ICECAST_CUSTOMCONFIG=true
     volumes:
       - /opt/adsb/rtlsdr-airband:/run/rtlsdr-airband
       - /dev/bus/usb:/dev/bus/usb
 
-######################################################################################################################################
-# Additional aircraft related containers: ACARS/VDLM
-# With these containers, you can receive and look at ACARS and VDL-M2 messages and feed those to ariframes.io.
-# Note that the plane.watch container is also set up to forward these messages.
-# The set consists of the following containers:
-# acarsdec: receives and decodes ACARS data from a dedicated RTL-SDR dongle
-# dumpvdl2: receives and decodes VDL-M2 data from a dedicated RTL-SDR dongle
-# acars_router: functions as an aggregator/distributor of the received ACARS and VDL-M2 data
-# acarshub: visualization tool for ACARS and VDL-M2 data
+  ######################################################################################################################################
+  # Additional aircraft related containers: ACARS/VDLM
+  # With these containers, you can receive and look at ACARS and VDL-M2 messages and feed those to ariframes.io.
+  # Note that the plane.watch container is also set up to forward these messages.
+  # The set consists of the following containers:
+  # acarsdec: receives and decodes ACARS data from a dedicated RTL-SDR dongle
+  # dumpvdl2: receives and decodes VDL-M2 data from a dedicated RTL-SDR dongle
+  # acars_router: functions as an aggregator/distributor of the received ACARS and VDL-M2 data
+  # acarshub: visualization tool for ACARS and VDL-M2 data
 
   acarsdec:
     image: ghcr.io/sdr-enthusiasts/docker-acarsdec:latest
-#    profiles:
-#      - donotstart
+    #    profiles:
+    #      - donotstart
     container_name: acarsdec
     restart: always
     device_cgroup_rules:
-      - 'c 189:* rwm'
+      - "c 189:* rwm"
     environment:
       - TZ=${FEEDER_TZ}
       - SOAPYSDR=driver=rtlsdr,serial=${ACARS_SDR_SERIAL}
@@ -458,12 +455,12 @@ services:
 
   dumpvdl2:
     image: ghcr.io/sdr-enthusiasts/docker-dumpvdl2:latest
-#    profiles:
-#      - donotstart
+    #    profiles:
+    #      - donotstart
     container_name: dumpvdl2
     restart: always
     device_cgroup_rules:
-      - 'c 189:* rwm'
+      - "c 189:* rwm"
     environment:
       - TZ=${FEEDER_TZ}
       - SOAPYSDR=driver=rtlsdr,serial=${VDLM_SDR_SERIAL}
@@ -483,8 +480,8 @@ services:
 
   acars_router:
     image: ghcr.io/sdr-enthusiasts/acars_router:latest
-#    profiles:
-#      - donotstart
+    #    profiles:
+    #      - donotstart
     container_name: acars_router
     restart: always
     environment:
@@ -493,18 +490,18 @@ services:
       - AR_SEND_UDP_VDLM2=acarshub:5555
       - AR_SEND_TCP_VDLM2=feed.acars.io:5553
       - AR_RECV_ZMQ_VDLM2=dumpvdl2:45555
-#      - AR_VERBOSITY=1
+    #      - AR_VERBOSITY=1
     ports:
-     - 15550:15550
-     - 15555:15555
+      - 15550:15550
+      - 15555:15555
     tmpfs:
       - /run:exec,size=64M
       - /var/log
 
   acarshub:
     image: ghcr.io/sdr-enthusiasts/docker-acarshub:latest
-#    profiles:
-#      - donotstart
+    #    profiles:
+    #      - donotstart
     container_name: acarshub
     hostname: acarshub
     restart: always
@@ -524,79 +521,78 @@ services:
       - /run:exec,size=64M
       - /var/log
 
-
-######################################################################################################################################
-# WebProxy translates unfriendly URLs like http://x.x.x.x:8091 into friendly URLs like http://x.x.x.x/acarshub
-# It also provides GeoIP filtering and Bot Filtering
-# Although it's possible (and easy) to add SSL connectivity for websites that are exposed to the Internet,
-# the setup below doesn't include this.
-# Additionally, you can host your own web pages in this directory: /opt/adsb/webproxy/html
+  ######################################################################################################################################
+  # WebProxy translates unfriendly URLs like http://x.x.x.x:8091 into friendly URLs like http://x.x.x.x/acarshub
+  # It also provides GeoIP filtering and Bot Filtering
+  # Although it's possible (and easy) to add SSL connectivity for websites that are exposed to the Internet,
+  # the setup below doesn't include this.
+  # Additionally, you can host your own web pages in this directory: /opt/adsb/webproxy/html
 
   webproxy:
     image: ghcr.io/sdr-enthusiasts/docker-reversewebproxy
-#    profiles:
-#      - donotstart
+    #    profiles:
+    #      - donotstart
     container_name: webproxy
     hostname: webproxy
     restart: always
     ports:
-       - 80:80
-       - 443:443
+      - 80:80
+      - 443:443
     extra_hosts:
       - "host.docker.internal:host-gateway"
     environment:
-       - AUTOGENERATE=ON
-       - VERBOSELOG=ON
-       - GEOIP_DEFAULT=ALLOW
-       - GEOIP_COUNTRIES=RU,CN,BY
-       - GEOIP_RESPONSECODE=418
-       - REVPROXY=
-            readsb|http://host.docker.internal:8080,
-            graphs|http://host.docker.internal:8080/graphs1090,
-            stats|http://host.docker.internal:8080/graphs1090,
-            radar|http://host.docker.internal:8080,
-            tar1090|http://host.docker.internal:8080,
-            map|http://host.docker.internal:8080,
-            ultrafeeder|http://host.docker.internal:8080,
-            piaware|http://host.docker.internal:8081,
-            piaware-stats|http://host.docker.internal:8088,
-            planefence|http://host.docker.internal:8083,
-            plane-alert|http://host.docker.internal:8083/plane-alert,
-            vnstat|http://host.docker.internal:8685,
-            planefinder|http://host.docker.internal:8084,ajax|http://host.docker.internal:8084/ajax,assets|http://host.docker.internal:8084/assets,
-            vrs|http://host.docker.internal/VirtualRadar,
-            fam|http://host.docker.internal:8090,
-            acarshub|http://host.docker.internal:8091
-       - REDIRECT=
-            /skyaware|/piaware,
-            /fr24|http://$$host:8754,
-            /planefinder/logs.html|http://$$host:8084/logs.html,
-            /airband|http://$$host:8000
-       - SSL=DISABLED
-       - BLOCKBOT=
-            bot,LieBaoFast,UCBrowser,MQQBrowser,Mb2345Browser,https://gdnplus.com,facebookexternalhit,http.rb,
-            google,bing,yandex,msnbot,wp-login.php,zgrab,zgrab2,aws/config.php,wp-includes,Guzzle,Friendica,
-            AltaVista,Googlebot,Slurp,BlackWidow,Bot,ChinaClaw,Custo,DISCo,Download,Demon,eCatch,EirGrabber,EmailSiphon,EmailWolf,SuperHTTP,Surfbot,WebWhacker,
-            Express,WebPictures,ExtractorPro,EyeNetIE,FlashGet,GetRight,GetWeb!,Go!Zilla,Go-Ahead-Got-It,GrabNet,Grafula,HMView,Go!Zilla,Go-Ahead-Got-It,
-            rafula,HMView,HTTrack,Stripper,Sucker,Indy,InterGET,Ninja,JetCar,Spider,larbin,LeechFTP,Downloader,tool,Navroad,NearSite,NetAnts,tAkeOut,WWWOFFLE,
-            GrabNet,NetSpider,Vampire,NetZIP,Octopus,Offline,PageGrabber,Foto,pavuk,pcBrowser,RealDownload,ReGet,SiteSnagger,SmartDownload,SuperBot,WebSpider,
-            Teleport,VoidEYE,Collector,WebAuto,WebCopier,WebFetch,WebGo,WebLeacher,WebReaper,WebSauger,eXtractor,Quester,WebStripper,WebZIP,Widow,Zeus,
-            Twengabot,htmlparser,libwww,Python,perl,urllib,scan,email,PycURL,Pyth,PyQ,WebCollector,WebCopy,webcraw,PetalBot,ubermetrics,Firefox/45,
-            Vert.x-WebClient,jsonlite,rv:45.0,Nexgate Ruby Client,scoop.it,NetSystemsResearch,Barkrowler,Python-Requests,Expanse,Go-http-client,scpitspi-rs,zgrab       - BLOCKBOT_RESPONSECODE=402
+      - AUTOGENERATE=ON
+      - VERBOSELOG=ON
+      - GEOIP_DEFAULT=ALLOW
+      - GEOIP_COUNTRIES=RU,CN,BY
+      - GEOIP_RESPONSECODE=418
+      - REVPROXY=
+        readsb|http://host.docker.internal:8080,
+        graphs|http://host.docker.internal:8080/graphs1090,
+        stats|http://host.docker.internal:8080/graphs1090,
+        radar|http://host.docker.internal:8080,
+        tar1090|http://host.docker.internal:8080,
+        map|http://host.docker.internal:8080,
+        ultrafeeder|http://host.docker.internal:8080,
+        piaware|http://host.docker.internal:8081,
+        piaware-stats|http://host.docker.internal:8088,
+        planefence|http://host.docker.internal:8083,
+        plane-alert|http://host.docker.internal:8083/plane-alert,
+        vnstat|http://host.docker.internal:8685,
+        planefinder|http://host.docker.internal:8084,ajax|http://host.docker.internal:8084/ajax,assets|http://host.docker.internal:8084/assets,
+        vrs|http://host.docker.internal/VirtualRadar,
+        fam|http://host.docker.internal:8090,
+        acarshub|http://host.docker.internal:8091
+      - REDIRECT=
+        /skyaware|/piaware,
+        /fr24|http://$$host:8754,
+        /planefinder/logs.html|http://$$host:8084/logs.html,
+        /airband|http://$$host:8000
+      - SSL=DISABLED
+      - BLOCKBOT=
+        bot,LieBaoFast,UCBrowser,MQQBrowser,Mb2345Browser,https://gdnplus.com,facebookexternalhit,http.rb,
+        google,bing,yandex,msnbot,wp-login.php,zgrab,zgrab2,aws/config.php,wp-includes,Guzzle,Friendica,
+        AltaVista,Googlebot,Slurp,BlackWidow,Bot,ChinaClaw,Custo,DISCo,Download,Demon,eCatch,EirGrabber,EmailSiphon,EmailWolf,SuperHTTP,Surfbot,WebWhacker,
+        Express,WebPictures,ExtractorPro,EyeNetIE,FlashGet,GetRight,GetWeb!,Go!Zilla,Go-Ahead-Got-It,GrabNet,Grafula,HMView,Go!Zilla,Go-Ahead-Got-It,
+        rafula,HMView,HTTrack,Stripper,Sucker,Indy,InterGET,Ninja,JetCar,Spider,larbin,LeechFTP,Downloader,tool,Navroad,NearSite,NetAnts,tAkeOut,WWWOFFLE,
+        GrabNet,NetSpider,Vampire,NetZIP,Octopus,Offline,PageGrabber,Foto,pavuk,pcBrowser,RealDownload,ReGet,SiteSnagger,SmartDownload,SuperBot,WebSpider,
+        Teleport,VoidEYE,Collector,WebAuto,WebCopier,WebFetch,WebGo,WebLeacher,WebReaper,WebSauger,eXtractor,Quester,WebStripper,WebZIP,Widow,Zeus,
+        Twengabot,htmlparser,libwww,Python,perl,urllib,scan,email,PycURL,Pyth,PyQ,WebCollector,WebCopy,webcraw,PetalBot,ubermetrics,Firefox/45,
+        Vert.x-WebClient,jsonlite,rv:45.0,Nexgate Ruby Client,scoop.it,NetSystemsResearch,Barkrowler,Python-Requests,Expanse,Go-http-client,scpitspi-rs,zgrab       - BLOCKBOT_RESPONSECODE=402
     tmpfs:
-       - /tmp:rw,nosuid,nodev,noexec,relatime,size=128M
+      - /tmp:rw,nosuid,nodev,noexec,relatime,size=128M
     volumes:
-       - /opt/adsb/webproxy:/run/nginx
-       - "/etc/localtime:/etc/localtime:ro"
-       - "/etc/timezone:/etc/timezone:ro"
+      - /opt/adsb/webproxy:/run/nginx
+      - "/etc/localtime:/etc/localtime:ro"
+      - "/etc/timezone:/etc/timezone:ro"
 
-######################################################################################################################################
-# AIS (Ship and Vessel related reporting)
-# shipfeeder :    decode AIS signals at 162 MHz and send them to aggregators including
-#                 ShipXplorer, airframes.io, HPRadar, VesselTracker, VesselFinder, MarineTraffic, aprs.fi, etc.
-# VesselAlert:    send Mastodon and Discord notification about ships heard
-# screenshot-ais: add-on to VesselAlert to include screenshots in the notification
-# ais2adsb:       add-on to ShipXplorer and VirtualRadarServer to show ships on the VRS map.
+  ######################################################################################################################################
+  # AIS (Ship and Vessel related reporting)
+  # shipfeeder :    decode AIS signals at 162 MHz and send them to aggregators including
+  #                 ShipXplorer, airframes.io, HPRadar, VesselTracker, VesselFinder, MarineTraffic, aprs.fi, etc.
+  # VesselAlert:    send Mastodon and Discord notification about ships heard
+  # screenshot-ais: add-on to VesselAlert to include screenshots in the notification
+  # ais2adsb:       add-on to ShipXplorer and VirtualRadarServer to show ships on the VRS map.
 
   shipfeeder:
     image: ghcr.io/sdr-enthusiasts/docker-shipfeeder
@@ -604,9 +600,9 @@ services:
     hostname: shipfeeder
     restart: always
     environment:
-#     general parameters:
+      #     general parameters:
       - VERBOSE_LOGGING=
-#     ais-catcher general and website related parameters
+      #     ais-catcher general and website related parameters
       - AISCATCHER_EXTRA_OPTIONS=${SX_EXTRA_OPTIONS}
       - STATION_NAME=${STATION_NAME}
       - STATION_HISTORY=3600
@@ -616,13 +612,13 @@ services:
       - SITESHOW=on
       - PROMETHEUS_ENABLE=on
       - REALTIME=on
-#     ais-catcher receiver related parameters
+      #     ais-catcher receiver related parameters
       - RTLSDR_DEVICE_SERIAL=${RTLSDR_DEVICE_SERIAL}
       - RTLSDR_DEVICE_GAIN=${RTLSDR_DEVICE_GAIN}
       - RTLSDR_DEVICE_PPM=${RTLSDR_DEVICE_PPM}
       - RTLSDR_DEVICE_BANDWIDTH=${RTLSDR_DEVICE_BANDWIDTH}
       - AISCATCHER_DECODER_AFC_WIDE=${AISCATCHER_DECODER_AFC_WIDE}
-#     aggregrators related parameters
+      #     aggregators related parameters
       - AIRFRAMES_STATION_ID=${AIRFRAMES_STATION_ID}
       - AISCATCHER_FEEDER_KEY=${AISCATCHER_FEEDER_KEY}
       - AISHUB_UDP_PORT=${AISHUB_UDP_PORT}
@@ -640,13 +636,13 @@ services:
       - VESSELFINDER_UDP_PORT=${VESSELFINDER_UDP_PORT}
       - VESSELTRACKER_UDP_PORT=${VESSELTRACKER_UDP_PORT}
       - UDP_FEEDS=${SX_UDP_FEEDS}
-#     incoming UDP data related parameters:
+      #     incoming UDP data related parameters:
       - AISCATCHER_UDP_INPUTS=${AISCATCHER_UDP_INPUTS}
     ports:
       - 90:80
       - 9988:9988/udp
     device_cgroup_rules:
-      - 'c 189:* rwm'
+      - "c 189:* rwm"
     tmpfs:
       - /tmp
     volumes:
@@ -709,15 +705,15 @@ services:
     hostname: ais2adsb
     restart: always
     environment:
-       - SBS_TARGET_HOST=vrs
-       - SBS_TARGET_PORT=49001  # adapt this to the VRS port you set up
-       - INCLUDE_SHIPS=true   # leave empty to forward only SAR aircraft
+      - SBS_TARGET_HOST=vrs
+      - SBS_TARGET_PORT=49001 # adapt this to the VRS port you set up
+      - INCLUDE_SHIPS=true # leave empty to forward only SAR aircraft
 
-######################################################################################################################################
-# Finally, a few "maintenance" containers that keep the rest of the stack healthy and up to date:
-# vnstat: shows network usage on a per interface (global and per container) basis
-# autoheal: restarts containers when they are deemed "unhealthy"
-# watchtower: checks every 24 hours for new versions of the containers, and downloads/installs/starts them
+  ######################################################################################################################################
+  # Finally, a few "maintenance" containers that keep the rest of the stack healthy and up to date:
+  # vnstat: shows network usage on a per interface (global and per container) basis
+  # autoheal: restarts containers when they are deemed "unhealthy"
+  # watchtower: checks every 24 hours for new versions of the containers, and downloads/installs/starts them
 
   vnstat:
     image: vergoh/vnstat
@@ -725,20 +721,20 @@ services:
     restart: always
     network_mode: "host"
     ports:
-       - 8685:8685
+      - 8685:8685
     volumes:
-       - /etc/localtime:/etc/localtime:ro
-       - /etc/timezone:/etc/timezone:ro
-       - /opt/adsb/vnstat:/var/lib/vnstat
+      - /etc/localtime:/etc/localtime:ro
+      - /etc/timezone:/etc/timezone:ro
+      - /opt/adsb/vnstat:/var/lib/vnstat
     environment:
-       - HTTP_PORT=8685
-       - HTTP_BIND=*
-       - HTTP_LOG=/dev/stdout
-       - LARGE_FONTS=1
-       - CACHE_TIME=1
-       - RATE_UNIT=0
-       - PAGE_REFRESH=0
-       - SERVER_NAME="ADSB Station IO Stats"
+      - HTTP_PORT=8685
+      - HTTP_BIND=*
+      - HTTP_LOG=/dev/stdout
+      - LARGE_FONTS=1
+      - CACHE_TIME=1
+      - RATE_UNIT=0
+      - PAGE_REFRESH=0
+      - SERVER_NAME="ADSB Station IO Stats"
 
   autoheal:
     image: willfarrell/autoheal

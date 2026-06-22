@@ -2,7 +2,7 @@
 
 Script to help install Docker on Raspberry Pi and devices with similar Debian-based OSes
 
-<img align="right" src="https://raw.githubusercontent.com/sdr-enthusiasts/sdr-enthusiast-assets/main/SDR%20Enthusiasts.svg" height="300">
+<img align="right" alt="SDR Enthusiasts logo" src="https://raw.githubusercontent.com/sdr-enthusiasts/sdr-enthusiast-assets/main/SDR%20Enthusiasts.svg" height="300">
 
 - [docker-install](#docker-install)
   - [What is it?](#what-is-it)
@@ -42,8 +42,8 @@ After running this script, your system should be ready to use `docker` and `dock
 
 ## How to run it?
 
-- Feel free to inspect the script [here](docker-install.sh). You should really not blindly run other people's script - make sure you feel comfortable with what it does before executing it.
-- The script assumes that `wget` is available, as it is on most systems. If it isn't, you may have to install it before running the script  with `sudo apt update && sudo apt install -y wget`
+- Feel free to inspect the [docker-install.sh script](docker-install.sh). You should really not blindly run other people's script - make sure you feel comfortable with what it does before executing it.
+- The script assumes that `wget` is available, as it is on most systems. If it isn't, you may have to install it before running the script with `sudo apt update && sudo apt install -y wget`
 - To use it, you can enter the following command in your login session:
 
 ```bash
@@ -52,7 +52,7 @@ bash <(wget -q -O - https://raw.githubusercontent.com/sdr-enthusiasts/docker-ins
 
 ## Command Line Options
 
-The script will install a number of packages, some of which are mandatory while others are optional. You can find the packages that will be installed [here](https://github.com/sdr-enthusiasts/docker-install/blob/main/docker-install.sh#L22).
+The script will install a number of packages, some of which are mandatory while others are optional. You can find the [packages that will be installed](https://github.com/sdr-enthusiasts/docker-install/blob/685517faf1c007f44e8afa80263ef1d433e562cc/docker-install.sh#L22) in the script source.
 
 If you want to exclude certain packages from being installed, you can do so by adding them to the command line with the prefix `no-`. For example to exclude `chrony` from being installed, you would use `no-chrony`.
 
@@ -95,4 +95,4 @@ E: Repository 'http://archive.raspberrypi.org/debian buster InRelease' changed i
 
 ## License
 
-This software is licensed under the MIT License. The terms and conditions thereof can be found [here](LICENSE).
+This software is licensed under the MIT License. The terms and conditions thereof can be found in the [LICENSE](LICENSE) file.

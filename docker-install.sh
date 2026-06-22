@@ -40,7 +40,7 @@ APT_INSTALLS+=(chrony)
 if grep "Raspberry Pi 4" /sys/firmware/devicetree/base/model >/dev/null 2>&1; then APT_INSTALLS+=(uhubctl); fi
 if ! grep "bookworm\|trixie" /etc/os-release >/dev/null 2>&1; then APT_INSTALLS+=(netcat); else APT_INSTALLS+=(netcat-openbsd); fi
 #
-# This is the list of SDR modules/drivers that need to get excluded 
+# This is the list of SDR modules/drivers that need to get excluded
 # Please keep the list in this order and add any additional ones to the BOTTOM
 BLOCKED_MODULES=("rtl2832_sdr")
 BLOCKED_MODULES+=("dvb_usb_rtl2832u")
@@ -105,8 +105,8 @@ if [[ "$EUID" == 0 ]]; then
 fi
 
 os_recommended=false
-if [[ -f /etc/os-release ]]; then 
-  for os in "${RECOMMENDED_DEBIAN[@]}"; do 
+if [[ -f /etc/os-release ]]; then
+  for os in "${RECOMMENDED_DEBIAN[@]}"; do
     #shellcheck disable=SC2143
     if grep -q "$os" /etc/os-release; then
       os_recommended=true
@@ -130,7 +130,7 @@ if [[ "$os_recommended" == false ]]; then
     echo "This device appears to be running a non-Debian OS identified by $MACHTYPE. This script only works on DEBIAN operating systems as it uses Debian specific commands like \"apt\" and \"dpkg\"."
     echo "Aborting!"
     exit 99
-  else 
+  else
     echo "This device appears to be running an unknown OS. This script relies on specific Debian commands commands like \"apt\" and \"dpkg\"."
     echo "As a result, the script will probably fail. You can try to continue, but we are unable to support you if any errors occur."
     echo "In that case, please upgrade your OS to Debian ${RECOMMENDED_DEBIAN[0]}, using for example to the latest version of DietPi, Raspberry Pi OS, Armbian, or Ubuntu."
@@ -177,7 +177,7 @@ fi
 #shellcheck disable=SC2199
 if [[ -n "$@" ]]; then
   readarray -d ' ' -t argv <<< "$@"
-  echo -n "The following applications will be excluded from the installation: " 
+  echo -n "The following applications will be excluded from the installation: "
   for i in "${argv[@]}"; do
     i="${i,,}"             # make lowercase
     i="${i//[$'\t\r\n ']}" # strip any newlines, spaces, etc.
@@ -254,8 +254,8 @@ EOF
       echo 'export PATH=/usr/bin:$PATH' >> ~/.bashrc
       export PATH=/usr/bin:$PATH
     fi
-    
-    sudo systemctl restart docker.service docker.socket 
+
+    sudo systemctl restart docker.service docker.socket
     echo "Now let's run a test container:"
     if sudo docker run --rm hello-world
     then
@@ -318,7 +318,7 @@ if [[ "${OS_VERSION}" == "BUSTER" ]] ||  [[ "${OS_VERSION}" == "STRETCH" ]]; the
 	LIBVERSION="$(apt-cache policy libseccomp2 | grep -e libseccomp2: -A1 | tail -n1)"
 	LIBVERSION_MAJOR="$(sed -n 's/.*:\s*\([0-9]*\).\([0-9]*\).*/\1/p' <<< "$LIBVERSION")"
 	LIBVERSION_MINOR="$(sed -n 's/.*:\s*\([0-9]*\).\([0-9]*\).*/\2/p' <<< "$LIBVERSION")"
-	
+
 	if (( LIBVERSION_MAJOR < 2 )) || (( LIBVERSION_MAJOR == 2 && LIBVERSION_MINOR < 4 )) && [[ "${OS_VERSION}" == "BUSTER" ]]
 	then
 	  echo "libseccomp2 needs updating. Please wait while we do this."
@@ -391,7 +391,7 @@ if [[ "${text,,}" != "n" ]]; then
     if which update-initramfs >/dev/null 2>&1; then
     	sudo update-initramfs -u  >/dev/null 2>&1 || true
     fi
-    
+
     if [[ "${UNLOAD_SUCCESS}" == false ]]; then
 	  echo "INFO: Although we've successfully excluded any competing RTL-SDR drivers, we weren't able to unload them. This will remedy itself when you reboot your system after the script finishes."
     fi
@@ -425,7 +425,7 @@ crontab -l > "$file" || true
   echo '0 3 * * * /usr/bin/docker system prune -af --filter "label!=do_not_prune" >/dev/null 2>&1'
   echo '#'
   echo '# Delete all unused containers (incl those labeled do_not_prune) weekly at 3 AM'
-  echo '0 4 * * 0 /usr/bin/docker system prune -af >/dev/null 2>&1' 
+  echo '0 4 * * 0 /usr/bin/docker system prune -af >/dev/null 2>&1'
 } >> "$file"
 crontab - < "$file"
 rm -f "$file"
