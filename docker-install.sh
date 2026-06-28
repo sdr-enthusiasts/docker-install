@@ -54,9 +54,9 @@ BLOCKED_MODULES+=("dvb_core")
 #
 # Recommended Debian version:
 RECOMMENDED_DEBIAN=("13 (trixie)")  # standard Debian version name. This is the one that will show as recommended
-RECOMMENDED_DEBIAN+=("22.04") # Ubuntu current LTS release
-RECOMMENDED_DEBIAN+=("23.04") # Ubuntu current normal release
-RECOMMENDED_DEBIAN+=("23.10") # Ubuntu current normal release
+RECOMMENDED_DEBIAN+=("26.04") # Ubuntu latest LTS release
+RECOMMENDED_DEBIAN+=("25.10") # Ubuntu latest normal release
+RECOMMENDED_DEBIAN+=("24.04") # Ubuntu latest LTS release (N-1)
 #
 # ------------------------------------------------------------------------------------------
 
